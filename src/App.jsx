@@ -34,9 +34,16 @@ function App() {
     }
 
     // Call Gemini for smart response
-    const botResponse = await getAssistantResponse(text, messages, updatedJurisdiction);
+    let botResponse = "";
+    try {
+      botResponse = await getAssistantResponse(text, messages, updatedJurisdiction);
+    } catch (error) {
+      console.error("App Logic Error:", error);
+      botResponse = "I'm having a bit of trouble connecting to my AI brain. This usually happens if there's a connectivity issue with the Gemini API or a configuration problem with the API key. In the meantime, you can still use the sidebar tools to explore election information!";
+    }
     
     setIsLoading(false);
+
     
     // Check for specific UI triggers in bot response or user query
     let component = null;

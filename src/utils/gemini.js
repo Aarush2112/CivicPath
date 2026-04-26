@@ -28,31 +28,59 @@ export async function getAssistantResponse(userQuery, history = [], jurisdiction
       return "Assistant API key not found. Please set VITE_GEMINI_API_KEY in your .env file.";
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
     // Build the prompt with jurisdiction context if available
-    let fullPrompt = `${SYSTEM_PROMPT}\n\n`;
+    let systemInstructions = `${SYSTEM_PROMPT}\n\n`;
     if (jurisdictionData) {
-      fullPrompt += `USER JURISDICTION: ${jurisdictionData.name}\n`;
-      fullPrompt += `JURISDICTION DATA: ${JSON.stringify(jurisdictionData)}\n\n`;
+      systemInstructions += `USER JURISDICTION: ${jurisdictionData.name}\n`;
+      systemInstructions += `JURISDICTION DATA: ${JSON.stringify(jurisdictionData)}\n\n`;
     }
 
-    // Add conversation history
-    const chat = model.startChat({
-      history: history.map(msg => ({
+    const contents = history
+      .filter(msg => msg.sender === 'user' || msg.sender === 'bot')
+      .map(msg => ({
         role: msg.sender === 'bot' ? 'model' : 'user',
-        parts: [{ text: msg.text }],
-      })),
+        parts: [{ text: msg.text }]
+      }));
+
+    // Ensure it starts with user
+    const firstUserIndex = contents.findIndex(c => c.role === 'user');
+    const validContents = firstUserIndex !== -1 ? contents.slice(firstUserIndex) : [];
+
+    const payload = {
+      contents: [
+        ...validContents,
+        {
+          role: 'user',
+          parts: [{ text: `${systemInstructions}\n\nUser Question: ${userQuery}` }]
+        }
+      ],
+
       generationConfig: {
-        maxOutputTokens: 500,
+        maxOutputTokens: 800,
+        temperature: 0.7,
+      }
+    };
+
+    // Use v1 endpoint instead of v1beta for better stability
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify(payload)
     });
 
-    const result = await chat.sendMessage(userQuery);
-    const response = await result.response;
-    return response.text();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "I'm having trouble connecting to my brain right now. Please try again in a moment, or check your internet connection.";
+    return "I'm having trouble connecting to my brain right now. This usually happens due to API key restrictions or regional connectivity. Please check your AI Studio project settings.";
   }
 }
+
