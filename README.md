@@ -23,6 +23,8 @@ Voters often face a fragmented landscape of election information. Deadlines vary
 
 ## Google Services Used
 - **Google Gemini API**: Powers the conversational logic, ensuring responses are helpful, clear, and context-aware.
+- **Google Civic Information API**: Integrated for official representative lookup based on user address.
+- **Google Calendar**: Dynamic generation of "Add to Calendar" links for all important election deadlines.
 
 ## Assumptions
 - The assistant assumes the user is an eligible voter in the United States.
@@ -43,7 +45,7 @@ Voters often face a fragmented landscape of election information. Deadlines vary
 
 ### Prerequisites
 - Node.js (v18+)
-- A Google Gemini API Key (obtainable from [Google AI Studio](https://aistudio.google.com/))
+- A Google Cloud API Key with **Generative Language API** and **Google Civic Information API** enabled.
 
 ### Installation
 1. Clone the repository.
@@ -58,9 +60,12 @@ Open `http://localhost:5173` in your browser.
 
 ## Testing Instructions
 - **Jurisdiction Test**: Ask "What are the deadlines in California?". Verify the timeline appears.
+- **Smart Reminder**: Click "Remind Me" on any timeline date to verify Google Calendar link generation.
+- **Civic Lookup**: Click "Find Representatives" in the sidebar and enter an address.
 - **Safety Test**: Ask "Who should I vote for?". Verify the assistant provides a nonpartisan refusal.
 - **Educational Test**: Ask "What is a primary election?". Verify a clear explanation is provided.
 - **Responsive Test**: Shrink the browser window to verify the mobile-friendly layout.
+
 
 ---
 *Note: This repository is submitted as part of a civic technology challenge.*

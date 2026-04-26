@@ -1,4 +1,4 @@
-import { Book, HelpCircle, MapPin, CheckSquare, Info, RefreshCw } from 'lucide-react';
+import { Book, HelpCircle, MapPin, CheckSquare, Info, RefreshCw, Landmark } from 'lucide-react';
 
 const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
   return (
@@ -31,6 +31,13 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
           onClick={() => onSelectSection('checklist')} 
           ariaLabel="Open your voting checklist"
         />
+        <SidebarItem 
+          icon={<Landmark size={18} />} 
+          label="Find Representatives" 
+          onClick={() => onSelectSection('lookup')} 
+          ariaLabel="Find your local representatives"
+        />
+
         <SidebarItem 
           icon={<HelpCircle size={18} />} 
           label="Common FAQs" 

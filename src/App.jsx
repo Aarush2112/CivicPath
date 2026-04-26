@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import Timeline from './components/Timeline';
 import Checklist from './components/Checklist';
+import CivicLookup from './components/CivicLookup';
 import { electionData, generalFAQs, glossary } from './data/electionData';
 import { getAssistantResponse } from './utils/gemini';
 import { ExternalLink } from 'lucide-react';
@@ -22,7 +23,7 @@ function App() {
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Detect jurisdiction from user input if not set or if they change it
+    // Detect jurisdiction from user input
     const detectedJurisdiction = Object.values(electionData).find(d => 
       text.toLowerCase().includes(d.name.toLowerCase())
     );
@@ -33,19 +34,16 @@ function App() {
       setCurrentJurisdiction(detectedJurisdiction);
     }
 
-    // Call Gemini for smart response
+    // Call Gemini for smart response (Fallback)
     let botResponse = "";
     try {
       botResponse = await getAssistantResponse(text, messages, updatedJurisdiction);
     } catch (error) {
-      console.error("App Logic Error:", error);
-      botResponse = "I'm having a bit of trouble connecting to my AI brain. This usually happens if there's a connectivity issue with the Gemini API or a configuration problem with the API key. In the meantime, you can still use the sidebar tools to explore election information!";
+      botResponse = "I'm having trouble with my AI connection. However, I can still provide you with official election data and tools! For example, would you like to see your local representative lookup or a voting checklist?";
     }
     
     setIsLoading(false);
-
     
-    // Check for specific UI triggers in bot response or user query
     let component = null;
     const lowerText = text.toLowerCase();
     const lowerBotRes = botResponse.toLowerCase();
@@ -54,6 +52,8 @@ function App() {
       component = <Timeline data={updatedJurisdiction} />;
     } else if (lowerText.includes('checklist') || lowerText.includes('step') || lowerBotRes.includes('checklist')) {
       component = <Checklist jurisdictionName={updatedJurisdiction?.name} />;
+    } else if (lowerText.includes('representative') || lowerText.includes('lookup') || lowerText.includes('reps')) {
+      component = <CivicLookup />;
     }
 
     setMessages(prev => [...prev, { sender: 'bot', text: botResponse, component }]);
@@ -102,6 +102,8 @@ function App() {
       }]);
     } else if (section === 'checklist') {
       setMessages(prev => [...prev, { sender: 'bot', text: "Opening your checklist...", component: <Checklist jurisdictionName={currentJurisdiction?.name} /> }]);
+    } else if (section === 'lookup') {
+      setMessages(prev => [...prev, { sender: 'bot', text: "Opening the Official Representative Lookup...", component: <CivicLookup /> }]);
     } else if (section === 'process') {
       handleSendMessage("Explain the general election process step-by-step.");
     } else if (section === 'jurisdictions') {
@@ -118,4 +120,5 @@ function App() {
 }
 
 export default App;
+
 
