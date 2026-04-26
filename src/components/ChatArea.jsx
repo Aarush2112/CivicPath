@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, User, Bot } from 'lucide-react';
+import { Send, User, Bot, Loader2 } from 'lucide-react';
 
-const ChatArea = ({ messages, onSendMessage }) => {
+const TOPICS = [
+  { label: "Check Deadlines", query: "What are the important election deadlines?" },
+  { label: "How to Register", query: "How do I register to vote?" },
+  { label: "Voting Checklist", query: "Can I see my voting checklist?" },
+  { label: "What's a Primary?", query: "Explain what a primary election is." }
+];
+
+const ChatArea = ({ messages, onSendMessage, isLoading }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -11,11 +18,11 @@ const ChatArea = ({ messages, onSendMessage }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (input.trim()) {
+    if (input.trim() && !isLoading) {
       onSendMessage(input);
       setInput('');
     }
@@ -32,7 +39,7 @@ const ChatArea = ({ messages, onSendMessage }) => {
               display: 'flex',
               gap: '1rem',
               alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '80%',
+              maxWidth: '85%',
               flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row'
             }}
           >
@@ -56,23 +63,59 @@ const ChatArea = ({ messages, onSendMessage }) => {
               padding: '1rem',
               borderRadius: msg.sender === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
               boxShadow: 'var(--shadow-sm)',
-              fontSize: '1rem'
+              fontSize: '1rem',
+              lineHeight: '1.5'
             }}>
-              {msg.text}
+              <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
               {msg.component && <div style={{ marginTop: '1rem' }}>{msg.component}</div>}
             </div>
           </div>
         ))}
+        {isLoading && (
+          <div style={{ display: 'flex', gap: '1rem', alignSelf: 'flex-start' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}>
+              <Bot size={18} />
+            </div>
+            <div style={{ background: 'white', padding: '1rem', borderRadius: '18px 18px 18px 4px', boxShadow: 'var(--shadow-sm)' }}>
+              <Loader2 className="animate-spin" size={20} color="var(--primary)" />
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div style={{ padding: '2rem', borderTop: '1px solid #e5e7eb', background: 'white' }}>
+      <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid #e5e7eb', background: 'white' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          {TOPICS.map((topic, i) => (
+            <button 
+              key={i} 
+              onClick={() => onSendMessage(topic.query)}
+              className="card"
+              style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s', border: '1px solid #e5e7eb' }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+              onMouseOut={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+            >
+              {topic.label}
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '1rem', position: 'relative' }}>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about the election process..."
+            disabled={isLoading}
             style={{
               flex: 1,
               padding: '1rem 1.5rem',
@@ -80,19 +123,30 @@ const ChatArea = ({ messages, onSendMessage }) => {
               border: '1px solid #e5e7eb',
               outline: 'none',
               fontSize: '1rem',
-              boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.02)'
+              boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.02)',
+              opacity: isLoading ? 0.7 : 1
             }}
           />
           <button 
             type="submit" 
             className="btn-primary"
-            style={{ padding: '0.75rem', borderRadius: '50%', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            disabled={isLoading || !input.trim()}
+            style={{ 
+              padding: '0.75rem', 
+              borderRadius: '50%', 
+              width: '48px', 
+              height: '48px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              opacity: (isLoading || !input.trim()) ? 0.5 : 1
+            }}
           >
             <Send size={20} />
           </button>
         </form>
-        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-          This assistant is for educational purposes. Always verify deadlines with official sources.
+        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>
+          CivicPath is nonpartisan and provides educational information. Verify with official sources.
         </p>
       </div>
     </div>
@@ -100,3 +154,4 @@ const ChatArea = ({ messages, onSendMessage }) => {
 };
 
 export default ChatArea;
+

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, Square } from 'lucide-react';
+import { CheckSquare, Square, ClipboardCheck } from 'lucide-react';
 
 const Checklist = ({ jurisdictionName }) => {
   const [items, setItems] = useState([
@@ -20,48 +20,58 @@ const Checklist = ({ jurisdictionName }) => {
   };
 
   const completedCount = items.filter(i => i.completed).length;
+  const progress = (completedCount / items.length) * 100;
 
   return (
-    <div className="card" style={{ border: '1px solid #e2e8f0', maxWidth: '500px' }}>
-      <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        Voting Checklist
-      </h3>
-      <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-        Progress for {jurisdictionName || 'your area'}: {completedCount}/{items.length} completed
+    <div className="card" style={{ maxWidth: '450px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+        <ClipboardCheck size={24} color="var(--primary)" />
+        <h3 style={{ margin: 0 }}>Voting Checklist</h3>
+      </div>
+      
+      <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+        Step-by-step preparation for {jurisdictionName || 'your area'}.
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.5rem', fontWeight: 600 }}>
+          <span>Progress</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ 
+            height: '100%', 
+            width: `${progress}%`, 
+            background: 'var(--success)', 
+            transition: 'width 0.3s ease' 
+          }} />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {items.map(item => (
-          <button
+          <div
             key={item.id}
             onClick={() => toggleItem(item.id)}
+            className="checklist-item"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid #f1f5f9',
-              background: item.completed ? '#f0fdf4' : 'white',
-              cursor: 'pointer',
-              textAlign: 'left',
-              width: '100%',
-              transition: 'all 0.2s'
+              background: item.completed ? '#f0fdf4' : 'transparent',
+              border: item.completed ? '1px solid #dcfce7' : '1px solid transparent'
             }}
           >
             {item.completed ? (
-              <CheckSquare size={20} color="var(--success)" />
+              <CheckSquare size={20} color="var(--success)" style={{ flexShrink: 0 }} />
             ) : (
-              <Square size={20} color="#cbd5e1" />
+              <Square size={20} color="#94a3b8" style={{ flexShrink: 0 }} />
             )}
             <span style={{ 
-              fontSize: '0.9375rem', 
-              color: item.completed ? 'var(--text-muted)' : 'var(--text-main)',
+              fontSize: '0.875rem', 
+              color: item.completed ? '#166534' : 'var(--text-main)',
               textDecoration: item.completed ? 'line-through' : 'none'
             }}>
               {item.text}
             </span>
-          </button>
+          </div>
         ))}
       </div>
     </div>
@@ -69,3 +79,4 @@ const Checklist = ({ jurisdictionName }) => {
 };
 
 export default Checklist;
+
