@@ -1,20 +1,35 @@
+/**
+ * Google Civic Information API - Voter Information Lookup
+ * POST only: Proxies requests to Google Civic API to protect API keys.
+ */
 export default async function handler(req, res) {
+  // 1. Method Validation: Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ 
+      error: 'Method Not Allowed. This endpoint only supports POST requests for secure data handling.' 
+    });
   }
 
   const { address } = req.body;
   const CIVIC_INFO_API_KEY = process.env.CIVIC_INFO_API_KEY || process.env.GEMINI_API_KEY;
 
+  // 2. Environment Variable Validation
   if (!CIVIC_INFO_API_KEY) {
-    return res.status(500).json({ error: 'CIVIC_INFO_API_KEY is not configured on the server.' });
+    console.error('Environment Error: CIVIC_INFO_API_KEY is missing.');
+    return res.status(500).json({ 
+      error: 'Google Civic service is not configured. Please check server environment variables.' 
+    });
   }
 
-  if (!address) {
-    return res.status(400).json({ error: 'Address parameter is required' });
+  // 3. Input Validation
+  if (!address || typeof address !== 'string') {
+    return res.status(400).json({ 
+      error: 'Address parameter is required and must be a valid string.' 
+    });
   }
 
   try {
+    // 4. External API Call: Fetch voter information (polling places, contests, etc.)
     const response = await fetch(
       `https://www.googleapis.com/content/civicinfo/v2/voterinfo?address=${encodeURIComponent(address)}&key=${CIVIC_INFO_API_KEY}`
     );
@@ -22,14 +37,16 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorData = await response.json();
       return res.status(response.status).json({
-        error: errorData.error?.message || 'Error from Civic Info API',
+        error: errorData.error?.message || 'Upstream Error from Google Civic Information API',
       });
     }
 
     const data = await response.json();
     return res.status(200).json(data);
   } catch (error) {
-    console.error('Civic Voter Info API Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Civic Voter Info Internal API Error:', error);
+    return res.status(500).json({ 
+      error: 'Internal Server Error while communicating with Google Civic Services.' 
+    });
   }
 }

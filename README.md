@@ -21,66 +21,60 @@ Voters often face a fragmented landscape of election information. Deadlines vary
 4. **Interactive UI**: Triggers specific components (Timeline, Checklist, FAQ) to help visualize the process.
 5. **Next Step Guidance**: Always suggests a follow-up action to keep the voter moving forward.
 
-## Google Services Used
-- **Google Gemini API**: Powers the conversational logic, ensuring responses are helpful, clear, and context-aware.
-- **Google Civic Information API**: Integrated for official representative lookup based on user address.
-- **Google Calendar**: Dynamic generation of "Add to Calendar" links for all important election deadlines.
+## Google Services Integration
 
-## Assumptions
-- The assistant assumes the user is an eligible voter in the United States.
-- Specific deadlines provided are based on the 2026 Midterm Election cycle.
-- Users are encouraged to verify all information with official state sources.
+CivicPath leverages several Google Cloud services to provide a premium experience:
+- **Google Gemini API (1.5 Flash)**: Powers the nonpartisan conversational engine. Implemented in `api/gemini.js` and `src/utils/gemini.js`.
+- **Google Civic Information API**: Provides official data for local representatives and election information. Implemented in `api/civic/` and `src/utils/civicApi.js`.
+- **Google Calendar**: Dynamically generates reminder links for all key election dates. See `generateCalendarLink` in `src/utils/civicApi.js`.
 
-## Security and Privacy
-- CivicPath does not store personal voter data or sensitive identifiers.
-- **Backend API Routes**: All Google API calls are routed through serverless functions (located in the `/api` directory) to prevent exposing API keys in the frontend bundle.
-- **Environment Variables**: API keys are handled via server-side environment variables and are never committed to the repository.
-- **Key Restrictions**: For production, it is recommended to restrict your Google API keys to the `civic-path.vercel.app` referrer in the Google Cloud Console.
+### Environment Variables
+For the app to function fully, the following environment variables must be configured in your deployment platform (e.g., Vercel) or local `.env` file:
+- `GEMINI_API_KEY`: Your Google AI Studio API Key.
+- `CIVIC_INFO_API_KEY`: Your Google Cloud Console API Key with Civic Information API enabled.
 
-## Accessibility
-- High-contrast colors and clear typography (Outfit and Inter).
-- Keyboard-friendly navigation.
-- Semantic HTML for screen readers.
-- Responsive design for mobile and desktop usage.
+## Automated Testing
 
-## Setup and Run Instructions
+CivicPath includes a comprehensive test suite using **Vitest** and **React Testing Library**.
+
+### Running Tests
+```bash
+npm test
+```
+
+### What is Covered
+- **Safety Policy**: Verifies that the assistant's system prompt strictly enforces nonpartisan behavior and "jurisdiction-first" logic.
+- **Logic Validation**: Tests the Google Calendar link generation and data parsing utilities.
+- **Data Integrity**: Ensures the `electionData.js` source contains all required fields (registration, early voting, etc.) for every supported state.
+- **Error Handling**: Validates that the UI provides clear guidance when Google Services are unavailable.
+
+## API Endpoint Security
+- All API routes (`/api/*`) are restricted to **POST** methods only.
+- Validation logic ensures that required inputs (like addresses or chat history) are present and correctly formatted.
+- Environment variables are handled strictly on the server side to prevent exposing API keys to the client bundle.
+
+
+## Setup and Installation
 
 ### Prerequisites
 - Node.js (v18+)
 - A Google Cloud API Key with **Generative Language API** and **Google Civic Information API** enabled.
 
-### Installation
+### Local Development
 1. Clone the repository.
 2. Run `npm install` to install dependencies.
-3. Create a `.env` file based on `.env.example`:
+3. Create a `.env` file:
    ```bash
    GEMINI_API_KEY=your_gemini_api_key_here
    CIVIC_INFO_API_KEY=your_google_civic_api_key_here
    ```
-4. **Note**: Do not use the `VITE_` prefix for these keys, as they are now used only on the server side.
-
-### Running Locally
-To test the API routes locally, use the Vercel CLI:
-```bash
-npm i -g vercel
-vercel dev
-```
-Alternatively, you can run `npm run dev` for frontend-only development, but API calls will fail unless the backend is running.
+4. To test API routes locally, use the Vercel CLI:
+   ```bash
+   npm i -g vercel
+   vercel dev
+   ```
 
 ### Vercel Deployment
-When deploying to Vercel:
-1. Go to your Project Settings > Environment Variables.
-2. Add `GEMINI_API_KEY` and `CIVIC_INFO_API_KEY`.
-3. Deploy the project. Vercel will automatically detect the `/api` folder and create serverless functions.
-
-## Testing Instructions
-- **Jurisdiction Test**: Ask "What are the deadlines in California?". Verify the timeline appears.
-- **Smart Reminder**: Click "Remind Me" on any timeline date to verify Google Calendar link generation.
-- **Civic Lookup**: Click "Find Representatives" in the sidebar and enter an address.
-- **Safety Test**: Ask "Who should I vote for?". Verify the assistant provides a nonpartisan refusal.
-- **Educational Test**: Ask "What is a primary election?". Verify a clear explanation is provided.
-- **Responsive Test**: Shrink the browser window to verify the mobile-friendly layout.
-
-
----
-*Note: This repository is submitted as part of a civic technology challenge.*
+1. Connect your repo to Vercel.
+2. Add `GEMINI_API_KEY` and `CIVIC_INFO_API_KEY` to Environment Variables.
+3. Deploy. The `/api` folder will be automatically handled as serverless functions.

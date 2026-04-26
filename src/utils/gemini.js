@@ -71,7 +71,7 @@ The 2026 Midterm Elections are on November 3, 2026.
 
   } catch (error) {
     console.error("Assistant Error:", error);
-    return "I'm having trouble connecting to my brain right now. This usually happens if the server-side API key is missing or the backend is unreachable. Please ensure the project is deployed on Vercel with correct environment variables.";
+    return "Google service is currently unavailable. Please verify official election information from your local election office. (Technical Error: " + error.message + ")";
   }
 }
 

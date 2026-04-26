@@ -14,7 +14,7 @@ export async function getRepresentativeInfo(address) {
     return await response.json();
   } catch (error) {
     console.error("Civic API Error:", error);
-    throw error;
+    throw new Error("Google service is currently unavailable. Please verify official election information from your local election office.", { cause: error });
   }
 }
 
@@ -34,7 +34,7 @@ export async function getElectionInfo(address) {
     return await response.json();
   } catch (error) {
     console.error("Civic API Error:", error);
-    throw error;
+    throw new Error("Google service is currently unavailable. Please verify official election information from your local election office.", { cause: error });
   }
 }
 

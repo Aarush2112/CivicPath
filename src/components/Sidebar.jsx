@@ -67,6 +67,18 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
           onClick={onReset} 
           ariaLabel="Reset the conversation"
         />
+
+        <div className="sidebar-logo card" style={{ padding: '0.75rem', background: 'rgba(66, 133, 244, 0.1)', border: '1px solid rgba(66, 133, 244, 0.2)', marginTop: '0.5rem' }}>
+          <p style={{ fontWeight: 600, fontSize: '0.75rem', color: '#4285F4', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4285F4' }}></span>
+            Google Services
+          </p>
+          <ul style={{ fontSize: '0.7rem', margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <li>Gemini 1.5 Flash AI</li>
+            <li>Civic Information API</li>
+            <li>Google Calendar Integration</li>
+          </ul>
+        </div>
       </div>
     </aside>
   );
