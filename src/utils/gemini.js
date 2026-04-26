@@ -61,8 +61,9 @@ export async function getAssistantResponse(userQuery, history = [], jurisdiction
       }
     };
 
-    // Use v1beta endpoint which is often more compatible with preview-tier keys
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${API_KEY}`, {
+    // Use v1beta endpoint with the standard flash model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
