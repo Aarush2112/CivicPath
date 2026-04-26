@@ -1,10 +1,9 @@
-const API_KEY = import.meta.env.VITE_CIVIC_INFO_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
-
 export async function getRepresentativeInfo(address) {
   try {
-    const response = await fetch(`https://www.googleapis.com/content/civicinfo/v2/representatives?address=${encodeURIComponent(address)}&key=${API_KEY}`);
+    const response = await fetch(`/api/civic/representatives?address=${encodeURIComponent(address)}`);
     if (!response.ok) {
-      throw new Error('Could not find representative info for this address.');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Could not find representative info for this address.');
     }
     return await response.json();
   } catch (error) {
@@ -15,9 +14,10 @@ export async function getRepresentativeInfo(address) {
 
 export async function getElectionInfo(address) {
   try {
-    const response = await fetch(`https://www.googleapis.com/content/civicinfo/v2/voterinfo?address=${encodeURIComponent(address)}&key=${API_KEY}`);
+    const response = await fetch(`/api/civic/voterinfo?address=${encodeURIComponent(address)}`);
     if (!response.ok) {
-      throw new Error('Could not find election info for this address.');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Could not find election info for this address.');
     }
     return await response.json();
   } catch (error) {

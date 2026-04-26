@@ -33,7 +33,9 @@ Voters often face a fragmented landscape of election information. Deadlines vary
 
 ## Security and Privacy
 - CivicPath does not store personal voter data or sensitive identifiers.
-- API keys are handled via environment variables and are never committed to the repository.
+- **Backend API Routes**: All Google API calls are routed through serverless functions (located in the `/api` directory) to prevent exposing API keys in the frontend bundle.
+- **Environment Variables**: API keys are handled via server-side environment variables and are never committed to the repository.
+- **Key Restrictions**: For production, it is recommended to restrict your Google API keys to the `civic-path.vercel.app` referrer in the Google Cloud Console.
 
 ## Accessibility
 - High-contrast colors and clear typography (Outfit and Inter).
@@ -50,13 +52,26 @@ Voters often face a fragmented landscape of election information. Deadlines vary
 ### Installation
 1. Clone the repository.
 2. Run `npm install` to install dependencies.
-3. Create a `.env` file based on `.env.example` and add your `VITE_GEMINI_API_KEY`.
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key_here
+   CIVIC_INFO_API_KEY=your_google_civic_api_key_here
+   ```
+4. **Note**: Do not use the `VITE_` prefix for these keys, as they are now used only on the server side.
 
 ### Running Locally
+To test the API routes locally, use the Vercel CLI:
 ```bash
-npm run dev
+npm i -g vercel
+vercel dev
 ```
-Open `http://localhost:5173` in your browser.
+Alternatively, you can run `npm run dev` for frontend-only development, but API calls will fail unless the backend is running.
+
+### Vercel Deployment
+When deploying to Vercel:
+1. Go to your Project Settings > Environment Variables.
+2. Add `GEMINI_API_KEY` and `CIVIC_INFO_API_KEY`.
+3. Deploy the project. Vercel will automatically detect the `/api` folder and create serverless functions.
 
 ## Testing Instructions
 - **Jurisdiction Test**: Ask "What are the deadlines in California?". Verify the timeline appears.

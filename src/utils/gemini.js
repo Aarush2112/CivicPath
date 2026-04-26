@@ -1,9 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
-
-const SYSTEM_PROMPT = `
+// Frontend utility to communicate with our serverless backend
+export async function getAssistantResponse(userQuery, history = [], jurisdictionData = null) {
+  try {
+    const SYSTEM_PROMPT = `
 You are "CivicPath", a smart, nonpartisan election process assistant. 
 Your goal is to guide users through the voting process with accuracy, clarity, and neutrality.
 
@@ -21,12 +19,6 @@ CONTEXT:
 Today's date is April 26, 2026. 
 The 2026 Midterm Elections are on November 3, 2026.
 `;
-
-export async function getAssistantResponse(userQuery, history = [], jurisdictionData = null) {
-  try {
-    if (!API_KEY) {
-      return "Assistant API key not found. Please set VITE_GEMINI_API_KEY in your .env file.";
-    }
 
     // Build the prompt with jurisdiction context if available
     let systemInstructions = `${SYSTEM_PROMPT}\n\n`;
@@ -54,16 +46,14 @@ export async function getAssistantResponse(userQuery, history = [], jurisdiction
           parts: [{ text: `${systemInstructions}\n\nUser Question: ${userQuery}` }]
         }
       ],
-
       generationConfig: {
         maxOutputTokens: 800,
         temperature: 0.7,
       }
     };
 
-    // Use v1beta endpoint with the standard flash model
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-
+    // Call our local serverless API route
+    const response = await fetch('/api/gemini', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,18 +61,17 @@ export async function getAssistantResponse(userQuery, history = [], jurisdiction
       body: JSON.stringify(payload)
     });
 
-
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
     return data.candidates[0].content.parts[0].text;
 
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "I'm having trouble connecting to my brain right now. This usually happens due to API key restrictions or regional connectivity. Please check your AI Studio project settings.";
+    console.error("Assistant Error:", error);
+    return "I'm having trouble connecting to my brain right now. This usually happens if the server-side API key is missing or the backend is unreachable. Please ensure the project is deployed on Vercel with correct environment variables.";
   }
 }
 
