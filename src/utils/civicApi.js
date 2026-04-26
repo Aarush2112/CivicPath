@@ -1,6 +1,12 @@
 export async function getRepresentativeInfo(address) {
   try {
-    const response = await fetch(`/api/civic/representatives?address=${encodeURIComponent(address)}`);
+    const response = await fetch('/api/civic/representatives', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ address })
+    });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Could not find representative info for this address.');
@@ -14,7 +20,13 @@ export async function getRepresentativeInfo(address) {
 
 export async function getElectionInfo(address) {
   try {
-    const response = await fetch(`/api/civic/voterinfo?address=${encodeURIComponent(address)}`);
+    const response = await fetch('/api/civic/voterinfo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ address })
+    });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Could not find election info for this address.');

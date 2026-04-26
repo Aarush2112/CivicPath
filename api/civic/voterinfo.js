@@ -1,9 +1,9 @@
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { address } = req.query;
+  const { address } = req.body;
   const CIVIC_INFO_API_KEY = process.env.CIVIC_INFO_API_KEY || process.env.GEMINI_API_KEY;
 
   if (!CIVIC_INFO_API_KEY) {

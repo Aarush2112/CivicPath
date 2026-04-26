@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar, CheckCircle2, Clock, FileText, Send, Landmark, BadgeCheck, Plus } from 'lucide-react';
+
+import { Calendar, Clock, FileText, Send, Landmark, BadgeCheck, Plus } from 'lucide-react';
 import { generateCalendarLink } from '../utils/civicApi';
 
 const Timeline = ({ data }) => {

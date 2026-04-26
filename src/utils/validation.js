@@ -3,7 +3,7 @@
  * This can be run to verify the core logic and safety rules.
  */
 
-import { electionData } from '../data/electionData';
+
 
 export const validateResponse = (query, response) => {
   const safetyCheck = {

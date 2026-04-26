@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, User, Bot, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Send, Loader2 } from 'lucide-react';
 
 const TOPICS = [
   { label: "Check Deadlines", query: "What are the important election deadlines?" },

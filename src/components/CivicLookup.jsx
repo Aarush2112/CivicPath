@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, MapPin, User, Building, ExternalLink, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Search, User, Building, Loader2 } from 'lucide-react';
 import { getRepresentativeInfo } from '../utils/civicApi';
 
 const CivicLookup = () => {

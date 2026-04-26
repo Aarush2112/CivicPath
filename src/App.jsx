@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import Timeline from './components/Timeline';
@@ -6,7 +6,7 @@ import Checklist from './components/Checklist';
 import CivicLookup from './components/CivicLookup';
 import { electionData, generalFAQs, glossary } from './data/electionData';
 import { getAssistantResponse } from './utils/gemini';
-import { ExternalLink } from 'lucide-react';
+
 
 function App() {
   const [messages, setMessages] = useState([
@@ -38,7 +38,7 @@ function App() {
     let botResponse = "";
     try {
       botResponse = await getAssistantResponse(text, messages, updatedJurisdiction);
-    } catch (error) {
+    } catch {
       botResponse = "I'm having trouble with my AI connection. However, I can still provide you with official election data and tools! For example, would you like to see your local representative lookup or a voting checklist?";
     }
     
