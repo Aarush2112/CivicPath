@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   const { address } = req.body;
-  const CIVIC_INFO_API_KEY = process.env.CIVIC_INFO_API_KEY || process.env.GEMINI_API_KEY;
+  const CIVIC_INFO_API_KEY = process.env.CIVIC_INFO_API_KEY;
 
   // 2. Environment Variable Validation
   if (!CIVIC_INFO_API_KEY) {
