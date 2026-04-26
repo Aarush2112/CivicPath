@@ -114,10 +114,32 @@ function App() {
   return (
     <div className="app-container">
       <Sidebar onSelectSection={handleSidebarSelect} currentJurisdiction={currentJurisdiction} onReset={resetChat} />
-      <ChatArea messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <div className="main-content">
+        <ChatArea messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
+        
+        {messages.length === 1 && (
+          <div className="animate-slide" style={{
+            position: 'absolute',
+            top: '45%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center',
+            width: '100%',
+            maxWidth: '500px',
+            padding: '2rem',
+            pointerEvents: 'none'
+          }}>
+            <h2 style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '1rem' }}>Welcome to CivicPath</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
+              Your intelligent companion for navigating the democratic process with confidence and clarity.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
 
 export default App;
 

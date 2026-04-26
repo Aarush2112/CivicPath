@@ -30,68 +30,32 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
 
   return (
     <div className="main-content">
-      <div style={{ flex: 1, overflowY: 'auto', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {messages.map((msg, index) => (
-          <div 
-            key={index} 
-            className={`animate-fade`}
-            style={{
-              display: 'flex',
-              gap: '1rem',
-              alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '85%',
-              flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row'
-            }}
-          >
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: msg.sender === 'user' ? 'var(--primary-light)' : 'var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              flexShrink: 0
-            }}>
-              {msg.sender === 'user' ? <User size={18} /> : <Bot size={18} />}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
+        <div className="chat-container">
+          {messages.map((msg, index) => (
+            <div 
+              key={index} 
+              className={`animate-slide ${msg.sender === 'bot' ? 'message-bot' : 'message-user'}`}
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9375rem' }}>{msg.text}</div>
+              {msg.component && (
+                <div style={{ marginTop: '1.25rem', animation: 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both', animationDelay: '0.2s' }}>
+                  {msg.component}
+                </div>
+              )}
             </div>
-            
-            <div style={{
-              background: msg.sender === 'user' ? 'var(--primary)' : 'white',
-              color: msg.sender === 'user' ? 'white' : 'var(--text-main)',
-              padding: '1rem',
-              borderRadius: msg.sender === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              boxShadow: 'var(--shadow-sm)',
-              fontSize: '1rem',
-              lineHeight: '1.5'
-            }}>
-              <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
-              {msg.component && <div style={{ marginTop: '1rem' }}>{msg.component}</div>}
+          ))}
+          {isLoading && (
+            <div className="message-bot animate-slide" style={{ display: 'flex', gap: '0.75rem', padding: '0.75rem 1.25rem' }}>
+              <Loader2 className="animate-spin" size={18} color="var(--primary-light)" />
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Thinking...</span>
             </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div style={{ display: 'flex', gap: '1rem', alignSelf: 'flex-start' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}>
-              <Bot size={18} />
-            </div>
-            <div style={{ background: 'white', padding: '1rem', borderRadius: '18px 18px 18px 4px', boxShadow: 'var(--shadow-sm)' }}>
-              <Loader2 className="animate-spin" size={20} color="var(--primary)" />
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
+
 
       <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid #e5e7eb', background: 'white' }}>
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
