@@ -29,7 +29,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
   };
 
   return (
-    <div className="main-content">
+    <>
       <div style={{ padding: '1rem 2rem', borderBottom: '1px solid #e5e7eb', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-main)' }}>Election Assistant</h2>
         <span style={{ fontSize: '0.75rem', color: '#4285F4', background: 'rgba(66, 133, 244, 0.1)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontWeight: 500 }}>
@@ -119,7 +119,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
           CivicPath is nonpartisan and provides educational information. Verify with official sources.
         </p>
       </div>
-    </div>
+    </>
   );
 };
 
