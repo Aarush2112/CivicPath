@@ -1,6 +1,7 @@
 /**
  * Gemini API Serverless Function
  * POST only: Proxies requests to Google Gemini API to protect API keys.
+ * Integrates Google Gemini 1.5 Flash to power the nonpartisan election assistant.
  */
 export default async function handler(req, res) {
   // 1. Method Validation: Only allow POST

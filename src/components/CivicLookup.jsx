@@ -26,10 +26,13 @@ const CivicLookup = () => {
 
   return (
     <div className="card" style={{ maxWidth: '500px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
         <Building size={24} color="var(--primary)" />
-        <h3 style={{ margin: 0 }}>Official Representative Lookup</h3>
+        <h3 style={{ margin: 0 }}>Official Civic Lookup</h3>
       </div>
+      <p style={{ fontSize: '0.75rem', color: '#4285F4', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 500 }}>
+        Powered by Google Civic Information API
+      </p>
       
       <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
         Enter your address to find your local, state, and federal representatives.

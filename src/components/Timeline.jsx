@@ -1,5 +1,5 @@
 
-import { Calendar, Clock, FileText, Send, Landmark, BadgeCheck, Plus } from 'lucide-react';
+import { Calendar, Clock, FileText, Send, Landmark, BadgeCheck } from 'lucide-react';
 import { generateCalendarLink } from '../utils/civicApi';
 
 const Timeline = ({ data }) => {
@@ -56,6 +56,7 @@ const Timeline = ({ data }) => {
                 </div>
               </div>
               
+              {/* Google Calendar Integration - Adds deadline to user's Google Calendar */}
               <a 
                 href={generateCalendarLink(
                   `${phase.label} - ${data.name}`, 
@@ -66,15 +67,22 @@ const Timeline = ({ data }) => {
                 rel="noreferrer"
                 className="btn-primary"
                 style={{ 
-                  padding: '0.25rem 0.5rem', 
-                  fontSize: '0.65rem', 
+                  padding: '0.4rem 0.75rem', 
+                  fontSize: '0.75rem', 
                   borderRadius: '6px',
-                  background: phase.highlight ? 'var(--accent)' : 'var(--primary-light)'
+                  background: phase.highlight ? 'var(--accent)' : 'var(--primary-light)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  textDecoration: 'none',
+                  color: 'white',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap'
                 }}
                 title="Add to Google Calendar"
               >
-                <Plus size={12} />
-                Remind
+                <Calendar size={14} />
+                Add to Google Calendar
               </a>
             </div>
           </div>

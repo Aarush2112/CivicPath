@@ -1,6 +1,7 @@
 /**
  * Google Civic Information API - Representatives Lookup
  * POST only: Proxies requests to Google Civic API to protect API keys.
+ * Integrates Google Civic Information to fetch official representative data.
  */
 export default async function handler(req, res) {
   // 1. Method Validation: Only allow POST

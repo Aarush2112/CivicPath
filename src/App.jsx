@@ -4,6 +4,7 @@ import ChatArea from './components/ChatArea';
 import Timeline from './components/Timeline';
 import Checklist from './components/Checklist';
 import CivicLookup from './components/CivicLookup';
+import VoterInfoLookup from './components/VoterInfoLookup';
 import { electionData, generalFAQs, glossary } from './data/electionData';
 import { getAssistantResponse } from './utils/gemini';
 
@@ -54,6 +55,8 @@ function App() {
       component = <Checklist jurisdictionName={updatedJurisdiction?.name} />;
     } else if (lowerText.includes('representative') || lowerText.includes('lookup') || lowerText.includes('reps')) {
       component = <CivicLookup />;
+    } else if (lowerText.includes('polling') || lowerText.includes('vote location') || lowerText.includes('where to vote')) {
+      component = <VoterInfoLookup />;
     }
 
     setMessages(prev => [...prev, { sender: 'bot', text: botResponse, component }]);
@@ -104,6 +107,8 @@ function App() {
       setMessages(prev => [...prev, { sender: 'bot', text: "Opening your checklist...", component: <Checklist jurisdictionName={currentJurisdiction?.name} /> }]);
     } else if (section === 'lookup') {
       setMessages(prev => [...prev, { sender: 'bot', text: "Opening the Official Representative Lookup...", component: <CivicLookup /> }]);
+    } else if (section === 'polling') {
+      setMessages(prev => [...prev, { sender: 'bot', text: "Opening the Polling Location Finder...", component: <VoterInfoLookup /> }]);
     } else if (section === 'process') {
       handleSendMessage("Explain the general election process step-by-step.");
     } else if (section === 'jurisdictions') {

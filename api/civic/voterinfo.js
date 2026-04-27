@@ -1,6 +1,7 @@
 /**
  * Google Civic Information API - Voter Information Lookup
  * POST only: Proxies requests to Google Civic API to protect API keys.
+ * Integrates Google Civic Information to fetch official polling locations and election data.
  */
 export default async function handler(req, res) {
   // 1. Method Validation: Only allow POST

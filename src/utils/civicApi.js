@@ -1,3 +1,5 @@
+// Google Civic Information API Integration
+// Proxies to /api/civic/representatives to protect API keys while fetching official local representatives
 export async function getRepresentativeInfo(address) {
   try {
     const response = await fetch('/api/civic/representatives', {
@@ -18,6 +20,8 @@ export async function getRepresentativeInfo(address) {
   }
 }
 
+// Google Civic Information API Integration
+// Proxies to /api/civic/voterinfo to fetch official polling places and election deadlines
 export async function getElectionInfo(address) {
   try {
     const response = await fetch('/api/civic/voterinfo', {
@@ -38,6 +42,8 @@ export async function getElectionInfo(address) {
   }
 }
 
+// Google Calendar Integration
+// Dynamically generates a link to add election deadlines to the user's Google Calendar
 export function generateCalendarLink(title, date, description) {
   const formattedDate = new Date(date).toISOString().replace(/-|:|\.\d\d\d/g, "");
   const nextDay = new Date(date);

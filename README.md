@@ -24,9 +24,17 @@ Voters often face a fragmented landscape of election information. Deadlines vary
 ## Google Services Integration
 
 CivicPath leverages several Google Cloud services to provide a premium experience:
-- **Google Gemini API (1.5 Flash)**: Powers the nonpartisan conversational engine. Implemented in `api/gemini.js` and `src/utils/gemini.js`.
-- **Google Civic Information API**: Provides official data for local representatives and election information. Implemented in `api/civic/` and `src/utils/civicApi.js`.
-- **Google Calendar**: Dynamically generates reminder links for all key election dates. See `generateCalendarLink` in `src/utils/civicApi.js`.
+
+| Google Service | Purpose | Implementation |
+|---|---|---|
+| Google Gemini API | Nonpartisan assistant responses | `api/gemini.js`, `src/utils/gemini.js` |
+| Google Civic Information API | Representative and voter info lookup | `api/civic/representatives.js`, `api/civic/voterinfo.js`, `src/utils/civicApi.js` |
+| Google Calendar | Deadline reminder links | `src/utils/civicApi.js`, `Timeline` component |
+
+**Why these services are useful:**
+- They allow us to build a dynamic application with real-time, personalized information for users based on their jurisdiction.
+- Gemini ensures we provide educational and nonpartisan responses, while the Civic API ensures we rely on accurate, official data sources.
+- Google Calendar integration creates an actionable user experience by ensuring users are reminded of important election deadlines.
 
 ### Environment Variables
 For the app to function fully, the following environment variables must be configured in your deployment platform (e.g., Vercel) or local `.env` file:

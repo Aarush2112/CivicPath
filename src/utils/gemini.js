@@ -71,7 +71,8 @@ The 2026 Midterm Elections are on November 3, 2026.
 
   } catch (error) {
     console.error("Assistant Error:", error);
-    return "Google service is currently unavailable. Please verify official election information from your local election office. (Technical Error: " + error.message + ")";
+    // Google Gemini Fallback: Gracefully handle unavailable service while keeping core app functional
+    return "Google Gemini is currently unavailable. You can still use CivicPath timelines and checklists, and should verify official election information with your local election office.";
   }
 }
 

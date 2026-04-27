@@ -31,6 +31,6 @@ describe('Assistant Safety and Policy', () => {
     });
 
     const response = await getAssistantResponse("Hello");
-    expect(response).toContain('Google service is currently unavailable');
+    expect(response).toContain('Google Gemini is currently unavailable');
   });
 });
