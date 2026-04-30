@@ -98,58 +98,39 @@ const CivicLookup = () => {
 
       {!loading && data && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-          {data.offices.map((office, i) => (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <p style={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.025em' }}>{office.name}</p>
-              {office.officialIndices.map(idx => {
-                const official = data.officials[idx];
-                const partyColor = official.party?.includes('Democrat') ? '#2563EB' : official.party?.includes('Republican') ? '#EF4444' : '#64748B';
-                
-                return (
-                  <div key={idx} className="card" style={{ display: 'flex', gap: '1rem', padding: '10px', background: '#fff' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#f1f5f9' }}>
-                      {official.photoUrl ? (
-                        <img src={official.photoUrl} alt={official.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center' }}>
-                          <User size={24} color="#cbd5e1" />
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{official.name}</span>
-                        <span style={{ 
-                          fontSize: '10px', 
-                          fontWeight: 700, 
-                          color: 'white', 
-                          background: partyColor, 
-                          padding: '2px 6px', 
-                          borderRadius: '4px' 
-                        }}>
-                          {official.party?.split(' ')[0]}
-                        </span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        {official.urls?.[0] && (
-                          <a href={official.urls[0]} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }} title="Website"><Globe size={14} /></a>
-                        )}
-                        {official.phones?.[0] && (
-                          <a href={`tel:${official.phones[0]}`} style={{ color: 'var(--text-muted)' }} title="Call"><Phone size={14} /></a>
-                        )}
-                        {official.channels?.map((ch, ci) => (
-                          <a key={ci} href={`https://${ch.type.toLowerCase()}.com/${ch.id}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)' }} title={ch.type}>
-                            {getSocialIcon(ch.type)}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Your Political Divisions</p>
+          {Object.entries(data.divisions || {}).map(([id, div], i) => (
+            <div key={i} className="card animate-slide" style={{ padding: '12px', background: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{div.name}</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>OCD-ID</span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 8px 0', fontFamily: 'monospace' }}>{id}</p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <a 
+                  href={`https://www.google.com/search?q=${encodeURIComponent(div.name + ' current representatives')}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    fontSize: '11px', 
+                    color: 'var(--primary)', 
+                    textDecoration: 'none', 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <ExternalLink size={12} /> View Officials
+                </a>
+              </div>
             </div>
           ))}
+          {(!data.divisions || Object.keys(data.divisions).length === 0) && (
+            <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)', padding: '20px' }}>
+              No division data found for this address.
+            </p>
+          )}
         </div>
       )}
     </div>

@@ -2,22 +2,25 @@ const API_KEY = import.meta.env.VITE_CIVIC_API_KEY || "";
 const BASE_URL = "https://www.googleapis.com/civicinfo/v2";
 
 /**
- * Fetches representative information from Google Civic API
+ * Fetches political divisions for an address from Google Civic API
+ * Note: The "Representatives" endpoint was turned down by Google in April 2025.
+ * This replacement finds the OCD-IDs (divisions) for the address.
  */
 export async function getRepresentativeInfo(address) {
   if (!API_KEY) {
     throw new Error('Civic API key is missing. Please configure VITE_CIVIC_API_KEY.');
   }
   
-  const cacheKey = `reps_${address}`;
+  const cacheKey = `divs_${address}`;
   const cached = sessionStorage.getItem(cacheKey);
   if (cached) return JSON.parse(cached);
 
   try {
-    const response = await fetch(`${BASE_URL}/representatives?key=${API_KEY}&address=${encodeURIComponent(address)}`);
+    const response = await fetch(`${BASE_URL}/divisionsByAddress?key=${API_KEY}&address=${encodeURIComponent(address)}`);
     if (!response.ok) {
       if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions or enable Civic Information API in Library).');
-      throw new Error(`Civic API Error (${response.status}): Could not find representative info.`);
+      if (response.status === 404) throw new Error('Address not recognized by the Civic API.');
+      throw new Error(`Civic API Error (${response.status}): Service unavailable or malformed request.`);
     }
     
     const data = await response.json();
