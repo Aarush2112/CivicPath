@@ -45,10 +45,24 @@ export async function getElectionInfo(address) {
   if (cached) return JSON.parse(cached);
 
   try {
-    const response = await fetch(`${BASE_URL}/voterinfo?key=${API_KEY}&address=${encodeURIComponent(address)}`);
+    // 1. Try default voter lookup (automatic election detection)
+    let response = await fetch(`${BASE_URL}/voterinfo?key=${API_KEY}&address=${encodeURIComponent(address)}`);
+    
+    // 2. If 400, try to find a specific active election ID as a fallback
+    if (response.status === 400) {
+      console.warn("Default voterinfo failed, attempting fallback to latest election...");
+      const elections = await getActiveElections();
+      if (elections.length > 0) {
+        // Sort by date descending and pick the first one (excluding the '2000' VIP test election)
+        const validElections = elections.filter(e => e.id !== "2000").sort((a, b) => new Date(b.electionDay) - new Date(a.electionDay));
+        const targetId = validElections[0]?.id || elections[0].id;
+        response = await fetch(`${BASE_URL}/voterinfo?key=${API_KEY}&address=${encodeURIComponent(address)}&electionId=${targetId}`);
+      }
+    }
+
     if (!response.ok) {
       if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions or enable Civic Information API in Library).');
-      throw new Error(`Voter API Error (${response.status}): Could not find election info.`);
+      throw new Error(`Voter API Error (${response.status}): No active election data found for this address in the current cycle.`);
     }
     
     const data = await response.json();
@@ -80,6 +94,21 @@ export async function geocodeAddress(address) {
   } catch (error) {
     console.error("Geocoding Error:", error);
     return { lat: 37.0902, lng: -95.7129 }; // Default US center
+  }
+}
+
+/**
+ * Fetches all active elections from Google Civic API
+ */
+export async function getActiveElections() {
+  if (!API_KEY) return [];
+  try {
+    const response = await fetch(`${BASE_URL}/elections?key=${API_KEY}`);
+    const data = await response.json();
+    return data.elections || [];
+  } catch (error) {
+    console.error("Elections API Error:", error);
+    return [];
   }
 }
 
