@@ -75,7 +75,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
           <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {messages.map((msg, index) => (
               <div 
-                key={index} 
+                key={msg.id || index} 
                 style={{ 
                   display: 'flex', 
                   flexDirection: 'column',
@@ -92,18 +92,27 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
                   padding: msg.sender === 'bot' ? '14px 18px' : '12px 16px',
                   fontSize: '14px',
                   lineHeight: 1.6,
-                  boxShadow: msg.sender === 'bot' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none'
+                  boxShadow: msg.sender === 'bot' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                  position: 'relative'
                 }}>
-                  <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                  {msg.isStreaming && !msg.text ? (
+                    <div style={{ display: 'flex', gap: '4px', padding: '4px 0' }}>
+                      <div className="typing-dot" style={{ animationDelay: '0s' }} />
+                      <div className="typing-dot" style={{ animationDelay: '0.2s' }} />
+                      <div className="typing-dot" style={{ animationDelay: '0.4s' }} />
+                    </div>
+                  ) : (
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                  )}
                 </div>
-                {msg.component && (
+                {msg.component && !msg.isStreaming && (
                   <div style={{ marginTop: '12px', width: '100%' }}>
                     {msg.component}
                   </div>
                 )}
               </div>
             ))}
-            {isLoading && (
+            {isLoading && !messages[messages.length - 1].isStreaming && (
               <div style={{ 
                 alignSelf: 'flex-start',
                 background: '#FFFFFF',
@@ -119,6 +128,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
                 <span style={{ fontSize: '13px', color: '#64748B' }}>Thinking...</span>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
         )}

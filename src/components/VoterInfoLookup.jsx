@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { Search, MapPin, Loader2, Calendar } from 'lucide-react';
-import { getElectionInfo } from '../utils/civicApi';
+import { getElectionInfo, geocodeAddress } from '../utils/civicApi';
+import PropTypes from 'prop-types';
 
+const MapComponent = lazy(() => import('./MapComponent'));
+
+/**
+ * Voter Information Lookup Component
+ * Fetches polling places and contests using Google Civic Information API
+ */
 const VoterInfoLookup = () => {
   const [address, setAddress] = useState('');
   const [data, setData] = useState(null);
+  const [center, setCenter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -15,8 +23,20 @@ const VoterInfoLookup = () => {
     setLoading(true);
     setError(null);
     try {
+      // 1. Geocode the user address for map centering
+      const coords = await geocodeAddress(address);
+      setCenter(coords);
+
+      // 2. Fetch voter info
       const result = await getElectionInfo(address);
       setData(result);
+      
+      // Track GA Event
+      if (window.gtag) {
+        window.gtag('event', 'polling_location_searched', { 
+          address: address.slice(0, 20) 
+        });
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -25,7 +45,7 @@ const VoterInfoLookup = () => {
   };
 
   return (
-    <div className="card" style={{ maxWidth: '600px', width: '100%' }}>
+    <div className="card animate-fade" style={{ maxWidth: '600px', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
         <MapPin size={24} color="var(--primary)" />
         <h3 style={{ margin: 0 }}>Find Polling Location</h3>
@@ -49,7 +69,8 @@ const VoterInfoLookup = () => {
             padding: '0.5rem 1rem',
             borderRadius: 'var(--radius-md)',
             border: '1px solid #e2e8f0',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            outline: 'none'
           }}
         />
         <button 
@@ -62,57 +83,63 @@ const VoterInfoLookup = () => {
         </button>
       </form>
 
-      {error && <p style={{ color: 'var(--error)', fontSize: '0.75rem' }}>{error}</p>}
+      {error && <p style={{ color: 'var(--error)', fontSize: '0.75rem', marginBottom: '1rem' }}>{error}</p>}
 
-      {data && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="skeleton" style={{ height: '80px', borderRadius: '8px' }} />
+          <div className="skeleton" style={{ height: '300px', borderRadius: '8px' }} />
+        </div>
+      )}
+
+      {!loading && data && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
           
           {data.election && (
-            <div style={{ background: 'var(--secondary)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ background: 'var(--primary-light)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--primary-glow)' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)' }}>
                 <Calendar size={18} />
                 {data.election.name}
               </h4>
-              <p style={{ margin: 0, fontSize: '0.875rem' }}>Election Date: {data.election.electionDay}</p>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}><strong>Election Day:</strong> {data.election.electionDay}</p>
             </div>
           )}
 
           {data.pollingLocations && data.pollingLocations.length > 0 ? (
             <div>
               <h4 style={{ marginBottom: '0.75rem', color: 'var(--text-main)' }}>Your Polling Location</h4>
-              {data.pollingLocations.slice(0, 1).map((location, i) => {
-                const fullAddress = `${location.address.line1}, ${location.address.city}, ${location.address.state} ${location.address.zip}`;
-                const encodedAddress = encodeURIComponent(fullAddress);
-                const mapsUrl = `https://maps.google.com/maps?q=${encodedAddress}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-                
-                return (
-                  <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                    <div style={{ padding: '1rem', borderBottom: '1px solid #e2e8f0' }}>
-                      <p style={{ fontWeight: 600, margin: '0 0 0.25rem 0' }}>{location.address.locationName}</p>
-                      <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>{fullAddress}</p>
-                      {location.pollingHours && (
-                        <p style={{ fontSize: '0.8125rem', margin: '0.5rem 0 0 0' }}><strong>Hours:</strong> {location.pollingHours}</p>
-                      )}
-                    </div>
-                    {/* Google Maps Embed */}
-                    <div style={{ width: '100%', height: '250px' }}>
-                      <iframe 
-                        width="100%" 
-                        height="100%" 
-                        frameBorder="0" 
-                        scrolling="no" 
-                        marginHeight="0" 
-                        marginWidth="0" 
-                        src={mapsUrl}
-                        title="Google Maps Polling Location"
-                      ></iframe>
-                    </div>
-                  </div>
-                );
-              })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-md)', background: '#fff' }}>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.25rem 0' }}>{data.pollingLocations[0].address.locationName}</p>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
+                    {data.pollingLocations[0].address.line1}, {data.pollingLocations[0].address.city}
+                  </p>
+                  {data.pollingLocations[0].pollingHours && (
+                    <p style={{ fontSize: '0.8125rem', margin: '0.5rem 0 0 0' }}><strong>Hours:</strong> {data.pollingLocations[0].pollingHours}</p>
+                  )}
+                </div>
+
+                <Suspense fallback={<div className="skeleton" style={{ height: '300px', borderRadius: '8px' }} />}>
+                  {center && <MapComponent center={center} locations={data.pollingLocations} />}
+                </Suspense>
+              </div>
             </div>
           ) : (
             data.election && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No specific polling locations found for this address in the upcoming election.</p>
+          )}
+
+          {data.contests && data.contests.length > 0 && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <h4 style={{ marginBottom: '0.75rem', color: 'var(--text-main)' }}>Upcoming Contests</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {data.contests.map((contest, i) => (
+                  <div key={i} style={{ padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-md)', background: '#f8fafc' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.875rem', margin: 0 }}>{contest.office || contest.type}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>{contest.district?.name || 'Local District'}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -121,3 +148,4 @@ const VoterInfoLookup = () => {
 };
 
 export default VoterInfoLookup;
+

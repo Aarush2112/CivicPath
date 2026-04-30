@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import Timeline from './components/Timeline';
@@ -7,8 +7,18 @@ import CivicLookup from './components/CivicLookup';
 import VoterInfoLookup from './components/VoterInfoLookup';
 import { electionData, generalFAQs, glossary } from './data/electionData';
 import { getAssistantResponse } from './utils/gemini';
+import { loginAnonymously, saveChatSession, loadChatSession } from './utils/firebase';
+import { initCalendarClient } from './utils/calendar';
+import { searchOfficialSources } from './utils/customSearch';
+import { withErrorBoundary } from './components/ErrorBoundary';
 
+const SafeSidebar = withErrorBoundary(Sidebar, 'Sidebar');
+const SafeChatArea = withErrorBoundary(ChatArea, 'ChatArea');
 
+/**
+ * Main Application Component
+ * Handles state management, navigation, and API integrations
+ */
 function App() {
   const [messages, setMessages] = useState([
     { 
@@ -18,37 +28,102 @@ function App() {
   ]);
   const [currentJurisdiction, setCurrentJurisdiction] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
+  // Initialize Firebase Auth and Load Session
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const currentUser = await loginAnonymously();
+        setUser(currentUser);
+        initCalendarClient();
+        
+        const savedChats = await loadChatSession(currentUser.uid);
+
+        if (savedChats && savedChats.length > 0) {
+          setMessages(savedChats);
+        }
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+      }
+    };
+    initAuth();
+  }, []);
+
+  // Save session when messages change
+  useEffect(() => {
+    if (user && messages.length > 1) {
+      saveChatSession(user.uid, messages);
+    }
+  }, [messages, user]);
+
+  /**
+   * Handles sending a message and getting a response from Gemini
+   * @param {string} text - User input
+   */
   const handleSendMessage = async (text) => {
     const userMessage = { sender: 'user', text };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
+    const lowerText = text.toLowerCase();
+
+    // Track GA Event
+    if (window.gtag) {
+      window.gtag('event', 'chat_message_sent', { 
+        topic: text.slice(0, 30),
+        user_id: user?.uid 
+      });
+    }
+
     // Detect jurisdiction from user input
     const detectedJurisdiction = Object.values(electionData).find(d => 
-      text.toLowerCase().includes(d.name.toLowerCase())
+      lowerText.includes(d.name.toLowerCase())
     );
 
     let updatedJurisdiction = currentJurisdiction;
     if (detectedJurisdiction) {
       updatedJurisdiction = detectedJurisdiction;
       setCurrentJurisdiction(detectedJurisdiction);
+      
+      if (window.gtag) {
+        window.gtag('event', 'jurisdiction_detected', { 
+          jurisdiction: detectedJurisdiction.name 
+        });
+      }
     }
 
-    // Call Gemini for smart response (Fallback)
-    let botResponse = "";
+    // Prepare streaming placeholder
+    const botMessageId = Date.now();
+    setMessages(prev => [...prev, { sender: 'bot', text: '', id: botMessageId, isStreaming: true }]);
+
+    // Call Gemini for smart response
+    let finalBotResponse = "";
+    let searchResults = [];
+
     try {
-      botResponse = await getAssistantResponse(text, messages, updatedJurisdiction);
-    } catch {
-      botResponse = "I'm having trouble with my AI connection. However, I can still provide you with official election data and tools! For example, would you like to see your local representative lookup or a voting checklist?";
+      // 3. Simultaneously search official sources for high-stakes queries
+      const shouldSearch = lowerText.includes('rule') || lowerText.includes('law') || lowerText.includes('candidate') || lowerText.includes('requirement');
+      if (shouldSearch) {
+        searchResults = await searchOfficialSources(text);
+      }
+
+      finalBotResponse = await getAssistantResponse(text, messages, updatedJurisdiction, (chunk) => {
+        setMessages(prev => prev.map(msg => 
+          msg.id === botMessageId ? { ...msg, text: chunk } : msg
+        ));
+      });
+    } catch (error) {
+      console.error("Gemini Error:", error);
+      finalBotResponse = "I'm having trouble with my AI connection. However, I can still provide you with official election data and tools! For example, would you like to see your local representative lookup or a voting checklist?";
     }
     
     setIsLoading(false);
     
     let component = null;
-    const lowerText = text.toLowerCase();
-    const lowerBotRes = botResponse.toLowerCase();
+    const lowerBotRes = finalBotResponse.toLowerCase();
 
+    // Determine which interactive component to show
     if (updatedJurisdiction && (lowerText.includes('timeline') || lowerText.includes('deadline') || lowerBotRes.includes('timeline'))) {
       component = <Timeline data={updatedJurisdiction} />;
     } else if (lowerText.includes('checklist') || lowerText.includes('step') || lowerBotRes.includes('checklist')) {
@@ -59,20 +134,64 @@ function App() {
       component = <VoterInfoLookup />;
     }
 
-    setMessages(prev => [...prev, { sender: 'bot', text: botResponse, component }]);
-  };
-
-  const resetChat = () => {
-    setMessages([
-      { 
-        sender: 'bot', 
-        text: "Hello! I'm CivicPath, your interactive election guide. I can help you understand how voting works, deadlines in your area, and what steps to take. To get started, what state or jurisdiction are you interested in?" 
+    // Add search results as source cards if available
+    if (searchResults.length > 0) {
+      const sourceCards = (
+        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Official Sources Found:</p>
+          {searchResults.slice(0, 3).map((item, i) => (
+            <a key={i} href={item.link} target="_blank" rel="noopener noreferrer" className="card animate-slide" style={{ textDecoration: 'none', padding: '10px' }}>
+              <p style={{ fontWeight: 600, fontSize: '13px', margin: '0 0 2px 0', color: 'var(--primary)' }}>{item.title}</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {item.snippet}
+              </p>
+            </a>
+          ))}
+        </div>
+      );
+      
+      // If there's already a component, wrap both
+      if (component) {
+        component = (
+          <>
+            {component}
+            {sourceCards}
+          </>
+        );
+      } else {
+        component = sourceCards;
       }
-    ]);
-    setCurrentJurisdiction(null);
+    }
+
+    setMessages(prev => prev.map(msg => 
+      msg.id === botMessageId ? { ...msg, text: finalBotResponse, component, isStreaming: false } : msg
+    ));
   };
 
+
+
+  /**
+   * Resets the chat state
+   */
+  const resetChat = () => {
+    const initialMsg = { 
+      sender: 'bot', 
+      text: "Hello! I'm CivicPath, your interactive election guide. I can help you understand how voting works, deadlines in your area, and what steps to take. To get started, what state or jurisdiction are you interested in?" 
+    };
+    setMessages([initialMsg]);
+    setCurrentJurisdiction(null);
+    if (user) saveChatSession(user.uid, [initialMsg]);
+  };
+
+  /**
+   * Handles sidebar navigation
+   * @param {string} section - Selected section ID
+   */
   const handleSidebarSelect = (section) => {
+    if (window.gtag) {
+      window.gtag('event', 'sidebar_navigation', { section });
+    }
+
     if (section === 'faq') {
       setMessages(prev => [...prev, { 
         sender: 'bot', 
@@ -118,15 +237,12 @@ function App() {
 
   return (
     <div className="app-container">
-      <Sidebar onSelectSection={handleSidebarSelect} currentJurisdiction={currentJurisdiction} onReset={resetChat} />
+      <SafeSidebar onSelectSection={handleSidebarSelect} currentJurisdiction={currentJurisdiction} onReset={resetChat} />
       <div className="main-content">
-        <ChatArea messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
+        <SafeChatArea messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
       </div>
     </div>
   );
 }
 
-
 export default App;
-
-

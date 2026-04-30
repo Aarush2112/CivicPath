@@ -1,7 +1,9 @@
-// Frontend utility to communicate with our serverless backend
-export async function getAssistantResponse(userQuery, history = [], jurisdictionData = null) {
-  try {
-    const SYSTEM_PROMPT = `
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(API_KEY);
+
+const SYSTEM_PROMPT = `
 You are "CivicPath", a smart, nonpartisan election process assistant. 
 Your goal is to guide users through the voting process with accuracy, clarity, and neutrality.
 
@@ -16,63 +18,59 @@ RULES:
 8. SEPARATION: Clearly distinguish between general educational info (e.g., "What is a primary?") and jurisdiction-specific rules (e.g., "In California, the deadline is...").
 
 CONTEXT:
-Today's date is April 26, 2026. 
+Today's date is May 1, 2026. 
 The 2026 Midterm Elections are on November 3, 2026.
 `;
 
-    // Build the prompt with jurisdiction context if available
-    let systemInstructions = `${SYSTEM_PROMPT}\n\n`;
-    if (jurisdictionData) {
-      systemInstructions += `USER JURISDICTION: ${jurisdictionData.name}\n`;
-      systemInstructions += `JURISDICTION DATA: ${JSON.stringify(jurisdictionData)}\n\n`;
-    }
+/**
+ * Communicates with Google Gemini API for nonpartisan civic assistance
+ * @param {string} userQuery - The message from the user
+ * @param {Array} history - Previous chat messages
+ * @param {Object} jurisdictionData - Contextual data about the user's jurisdiction
+ * @param {Function} onStream - Callback for streaming chunks
+ * @returns {Promise<string>} The full response text
+ */
+export async function getAssistantResponse(userQuery, history = [], jurisdictionData = null, onStream = null) {
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: SYSTEM_PROMPT + (jurisdictionData ? `\n\nUSER JURISDICTION: ${jurisdictionData.name}\nJURISDICTION DATA: ${JSON.stringify(jurisdictionData)}` : ""),
+      tools: [{ googleSearch: {} }] // Enable Google Search Grounding
+    });
 
-    const contents = history
-      .filter(msg => msg.sender === 'user' || msg.sender === 'bot')
+    const chatHistory = history
+      .filter(msg => (msg.sender === 'user' || msg.sender === 'bot') && msg.text)
       .map(msg => ({
         role: msg.sender === 'bot' ? 'model' : 'user',
         parts: [{ text: msg.text }]
       }));
 
-    // Ensure it starts with user
-    const firstUserIndex = contents.findIndex(c => c.role === 'user');
-    const validContents = firstUserIndex !== -1 ? contents.slice(firstUserIndex) : [];
-
-    const payload = {
-      contents: [
-        ...validContents,
-        {
-          role: 'user',
-          parts: [{ text: `${systemInstructions}\n\nUser Question: ${userQuery}` }]
-        }
-      ],
+    const chat = model.startChat({
+      history: chatHistory,
       generationConfig: {
-        maxOutputTokens: 800,
-        temperature: 0.7,
-      }
-    };
-
-    // Call our local serverless API route
-    const response = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+        maxOutputTokens: 1000,
+        temperature: 0.5,
       },
-      body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    if (onStream) {
+      const result = await chat.sendMessageStream(userQuery);
+      let fullText = "";
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        fullText += chunkText;
+        onStream(fullText);
+      }
+      return fullText;
+    } else {
+      const result = await chat.sendMessage(userQuery);
+      return result.response.text();
     }
 
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
-
   } catch (error) {
-    console.error("Assistant Error:", error);
-    // Google Gemini Fallback: Gracefully handle unavailable service while keeping core app functional
-    return "Google Gemini is currently unavailable. You can still use CivicPath timelines and checklists, and should verify official election information with your local election office.";
+    console.error("Gemini API Error:", error);
+    return "I'm having trouble connecting to my AI core. However, I can still provide you with official election data and tools from my sidebar! For example, would you like to see your local representative lookup or a voting checklist?";
   }
 }
+
 

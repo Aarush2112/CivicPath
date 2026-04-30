@@ -1,16 +1,24 @@
-import { Book, HelpCircle, MapPin, CheckSquare, RefreshCw, Landmark, ExternalLink } from 'lucide-react';
+import { Book, HelpCircle, MapPin, CheckSquare, RefreshCw, Landmark, ExternalLink, Calendar, Search } from 'lucide-react';
+import PropTypes from 'prop-types';
 
+/**
+ * Sidebar component for navigation and Google Services status
+ */
 const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
   return (
     <aside className="sidebar">
       <div style={{ 
         fontSize: '18px', 
-        fontWeight: 700, 
-        color: '#2563EB', 
+        fontWeight: 800, 
+        color: 'var(--primary)', 
         padding: '0 8px 20px 8px', 
-        borderBottom: '1px solid #E2E8F0', 
-        marginBottom: '12px' 
+        borderBottom: '1px solid var(--border)', 
+        marginBottom: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
       }}>
+        <Landmark size={22} />
         CivicPath
       </div>
 
@@ -28,6 +36,18 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
           ariaLabel="Find your local polling location"
         />
         <SidebarItem 
+          icon={<Calendar size={18} />} 
+          label="Voting Checklist" 
+          onClick={() => onSelectSection('checklist')} 
+          ariaLabel="View voting checklist"
+        />
+        <SidebarItem 
+          icon={<Search size={18} />} 
+          label="Search Sources" 
+          onClick={() => onSelectSection('process')} 
+          ariaLabel="Search official government sources"
+        />
+        <SidebarItem 
           icon={<HelpCircle size={18} />} 
           label="Common FAQs" 
           onClick={() => onSelectSection('faq')} 
@@ -40,11 +60,11 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
           ariaLabel="View election terms glossary"
         />
         
-        <div style={{ margin: '12px 0', padding: '10px 12px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
-          <p style={{ fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '11px', margin: 0 }}>
-            Current Focus
+        <div style={{ margin: '12px 0', padding: '10px 12px', background: 'var(--primary-light)', border: '1px solid var(--primary-glow)', borderRadius: '10px' }}>
+          <p style={{ fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '10px', margin: 0 }}>
+            Active Jurisdiction
           </p>
-          <p style={{ color: currentJurisdiction ? '#0F172A' : '#94A3B8', fontSize: '13px', marginTop: '2px', fontWeight: 500, margin: '2px 0 0 0' }}>
+          <p style={{ color: currentJurisdiction ? 'var(--text-primary)' : 'var(--text-muted)', fontSize: '13px', marginTop: '2px', fontWeight: 600, margin: '2px 0 0 0' }}>
             {currentJurisdiction ? currentJurisdiction.name : 'Not selected'}
           </p>
         </div>
@@ -58,34 +78,49 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
       </nav>
 
       <div style={{ marginTop: 'auto' }}>
-        <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', padding: '16px 12px 8px' }}>
-          Google Services Powering CivicPath
+        <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', padding: '16px 12px 8px' }}>
+          Integrated Services
         </p>
         
         <ServiceCard 
-          title="Google Gemini" 
-          description="Powers the nonpartisan assistant responses." 
+          title="Gemini 1.5 Flash" 
+          description="Multi-turn AI with streaming & grounding." 
           status="Connected"
         />
         <ServiceCard 
-          title="Civic API" 
-          description="Looks up representatives and voter information." 
+          title="Civic Info API" 
+          description="Voter info, reps, and official sources." 
           status="Connected"
         />
         <ServiceCard 
-          title="Google Calendar" 
-          description="Adds election deadlines as reminders." 
-          status="Available"
+          title="Maps JS API" 
+          description="Dynamic polling maps & geocoding." 
+          status="Connected"
+        />
+        <ServiceCard 
+          title="Calendar API" 
+          description="OAuth2-powered event reminders." 
+          status="Connected"
         />
       </div>
     </aside>
   );
 };
 
+Sidebar.propTypes = {
+  onSelectSection: PropTypes.func.isRequired,
+  currentJurisdiction: PropTypes.object,
+  onReset: PropTypes.func.isRequired
+};
+
+/**
+ * Helper component for sidebar items
+ */
 const SidebarItem = ({ icon, label, onClick, ariaLabel }) => (
   <button 
     onClick={onClick}
     aria-label={ariaLabel}
+    className="sidebar-nav-item"
     style={{
       display: 'flex',
       alignItems: 'center',
@@ -94,44 +129,47 @@ const SidebarItem = ({ icon, label, onClick, ariaLabel }) => (
       borderRadius: '8px',
       fontSize: '14px',
       fontWeight: 500,
-      color: '#475569',
+      color: 'var(--text-secondary)',
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
-      transition: 'all 0.15s ease',
+      transition: 'var(--transition)',
       width: '100%',
-      textAlign: 'left',
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }}
-    className="sidebar-nav-item"
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = '#EFF6FF';
-      e.currentTarget.style.color = '#2563EB';
-      e.currentTarget.querySelector('.sidebar-icon').style.color = '#2563EB';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = 'transparent';
-      e.currentTarget.style.color = '#475569';
-      e.currentTarget.querySelector('.sidebar-icon').style.color = '#94A3B8';
+      textAlign: 'left'
     }}
   >
-    <span className="sidebar-icon" style={{ width: '18px', height: '18px', color: '#94A3B8', flexShrink: 0, display: 'flex', transition: 'all 0.15s ease' }}>{icon}</span>
+    <span className="sidebar-icon" style={{ width: '18px', height: '18px', color: 'var(--text-muted)', flexShrink: 0, display: 'flex' }}>{icon}</span>
     <span>{label}</span>
   </button>
 );
 
+SidebarItem.propTypes = {
+  icon: PropTypes.node.isRequired,
+  label: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+  ariaLabel: PropTypes.string
+};
+
+/**
+ * Card for displaying service status
+ */
 const ServiceCard = ({ title, description, status }) => (
-  <div className="card" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '8px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
-    <p style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '4px', margin: '0 0 4px 0' }}>{title}</p>
-    <p style={{ fontSize: '12px', color: '#64748B', lineHeight: '1.5', margin: 0, wordBreak: 'break-word' }}>{description}</p>
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: 500, marginTop: '6px' }}>
-      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status === 'Connected' ? '#10B981' : '#F59E0B' }}></span>
-      <span style={{ color: status === 'Connected' ? '#10B981' : '#F59E0B' }}>{status}</span>
+  <div className="card" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', marginBottom: '8px' }}>
+    <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px', margin: 0 }}>{title}</p>
+    <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>{description}</p>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 600, marginTop: '4px' }}>
+      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: status === 'Connected' ? 'var(--success)' : '#F59E0B' }}></span>
+      <span style={{ color: status === 'Connected' ? 'var(--success)' : '#F59E0B' }}>{status}</span>
     </div>
   </div>
 );
 
+ServiceCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired
+};
+
 export default Sidebar;
+
 
