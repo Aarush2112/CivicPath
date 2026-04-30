@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Search, User, Building, Loader2, Globe, Phone, Twitter, Facebook } from 'lucide-react';
+import { Search, User, Building, Loader2, Globe, Phone, Share2, ExternalLink } from 'lucide-react';
 import { getRepresentativeInfo } from '../utils/civicApi';
 import debounce from 'lodash.debounce';
 
@@ -42,9 +42,12 @@ const CivicLookup = () => {
 
   const getSocialIcon = (type) => {
     switch (type.toLowerCase()) {
-      case 'twitter': return <Twitter size={14} />;
-      case 'facebook': return <Facebook size={14} />;
-      default: return <Globe size={14} />;
+      case 'twitter': 
+      case 'facebook': 
+      case 'youtube':
+      case 'instagram':
+        return <Share2 size={14} />;
+      default: return <ExternalLink size={14} />;
     }
   };
 
