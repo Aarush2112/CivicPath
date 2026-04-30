@@ -85,22 +85,22 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
         <ServiceCard 
           title="Gemini 1.5 Flash" 
           description="Multi-turn AI with streaming & grounding." 
-          status="Connected"
+          status={import.meta.env.VITE_GEMINI_API_KEY ? "Connected" : "Disconnected"}
         />
         <ServiceCard 
           title="Civic Info API" 
           description="Voter info, reps, and official sources." 
-          status="Connected"
+          status={import.meta.env.VITE_CIVIC_API_KEY ? "Connected" : "Disconnected"}
         />
         <ServiceCard 
           title="Maps JS API" 
           description="Dynamic polling maps & geocoding." 
-          status="Connected"
+          status={import.meta.env.VITE_MAPS_API_KEY ? "Connected" : "Disconnected"}
         />
         <ServiceCard 
           title="Calendar API" 
           description="OAuth2-powered event reminders." 
-          status="Connected"
+          status={import.meta.env.VITE_GOOGLE_CLIENT_ID ? "Connected" : "Disconnected"}
         />
       </div>
     </aside>
@@ -158,8 +158,13 @@ const ServiceCard = ({ title, description, status }) => (
     <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px', margin: 0 }}>{title}</p>
     <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>{description}</p>
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 600, marginTop: '4px' }}>
-      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: status === 'Connected' ? 'var(--success)' : '#F59E0B' }}></span>
-      <span style={{ color: status === 'Connected' ? 'var(--success)' : '#F59E0B' }}>{status}</span>
+      <span style={{ 
+        width: '6px', 
+        height: '6px', 
+        borderRadius: '50%', 
+        background: status === 'Connected' ? 'var(--success)' : '#EF4444' 
+      }}></span>
+      <span style={{ color: status === 'Connected' ? 'var(--success)' : '#EF4444' }}>{status}</span>
     </div>
   </div>
 );
