@@ -16,8 +16,8 @@ export async function getRepresentativeInfo(address) {
   try {
     const response = await fetch(`${BASE_URL}/representatives?key=${API_KEY}&address=${encodeURIComponent(address)}`);
     if (!response.ok) {
-      if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions).');
-      throw new Error('Could not find representative info.');
+      if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions or enable Civic Information API in Library).');
+      throw new Error(`Civic API Error (${response.status}): Could not find representative info.`);
     }
     
     const data = await response.json();
@@ -44,8 +44,8 @@ export async function getElectionInfo(address) {
   try {
     const response = await fetch(`${BASE_URL}/voterinfo?key=${API_KEY}&address=${encodeURIComponent(address)}`);
     if (!response.ok) {
-      if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions).');
-      throw new Error('Could not find election info.');
+      if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions or enable Civic Information API in Library).');
+      throw new Error(`Voter API Error (${response.status}): Could not find election info.`);
     }
     
     const data = await response.json();
