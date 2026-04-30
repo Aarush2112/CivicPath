@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 const SYSTEM_PROMPT = `
 You are "CivicPath", a smart, nonpartisan election process assistant. 
@@ -31,6 +31,9 @@ The 2026 Midterm Elections are on November 3, 2026.
  * @returns {Promise<string>} The full response text
  */
 export async function getAssistantResponse(userQuery, history = [], jurisdictionData = null, onStream = null) {
+  if (!genAI) {
+    return "Google Gemini is currently unavailable. Please verify official election information with your local election office or secretary of state.";
+  }
   try {
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",

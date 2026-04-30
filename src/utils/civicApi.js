@@ -1,19 +1,24 @@
-const API_KEY = import.meta.env.VITE_CIVIC_API_KEY;
+const API_KEY = import.meta.env.VITE_CIVIC_API_KEY || "";
 const BASE_URL = "https://www.googleapis.com/civicinfo/v2";
 
 /**
  * Fetches representative information from Google Civic API
- * @param {string} address - The user's registered address
- * @returns {Promise<Object>} Representative information
  */
 export async function getRepresentativeInfo(address) {
+  if (!API_KEY) {
+    throw new Error('Civic API key is missing. Please configure VITE_CIVIC_API_KEY.');
+  }
+  
   const cacheKey = `reps_${address}`;
   const cached = sessionStorage.getItem(cacheKey);
   if (cached) return JSON.parse(cached);
 
   try {
     const response = await fetch(`${BASE_URL}/representatives?key=${API_KEY}&address=${encodeURIComponent(address)}`);
-    if (!response.ok) throw new Error('Could not find representative info.');
+    if (!response.ok) {
+      if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions).');
+      throw new Error('Could not find representative info.');
+    }
     
     const data = await response.json();
     sessionStorage.setItem(cacheKey, JSON.stringify(data));
@@ -26,17 +31,22 @@ export async function getRepresentativeInfo(address) {
 
 /**
  * Fetches voter information (polling locations, contests) from Google Civic API
- * @param {string} address - The user's registered address
- * @returns {Promise<Object>} Voter information
  */
 export async function getElectionInfo(address) {
+  if (!API_KEY) {
+    throw new Error('Civic API key is missing. Please configure VITE_CIVIC_API_KEY.');
+  }
+
   const cacheKey = `voter_${address}`;
   const cached = sessionStorage.getItem(cacheKey);
   if (cached) return JSON.parse(cached);
 
   try {
     const response = await fetch(`${BASE_URL}/voterinfo?key=${API_KEY}&address=${encodeURIComponent(address)}`);
-    if (!response.ok) throw new Error('Could not find election info.');
+    if (!response.ok) {
+      if (response.status === 403) throw new Error('Google Civic API access denied (check API key restrictions).');
+      throw new Error('Could not find election info.');
+    }
     
     const data = await response.json();
     sessionStorage.setItem(cacheKey, JSON.stringify(data));
@@ -49,11 +59,14 @@ export async function getElectionInfo(address) {
 
 /**
  * Geocodes an address to lat/lng using Google Maps Geocoding API
- * @param {string} address 
- * @returns {Promise<{lat: number, lng: number}>}
  */
 export async function geocodeAddress(address) {
-  const MAPS_KEY = import.meta.env.VITE_MAPS_API_KEY;
+  const MAPS_KEY = import.meta.env.VITE_MAPS_API_KEY || "";
+  if (!MAPS_KEY) {
+    console.warn("Maps API key missing for geocoding");
+    return { lat: 37.0902, lng: -95.7129 }; // Default US center
+  }
+
   try {
     const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${MAPS_KEY}`);
     const data = await response.json();
@@ -68,14 +81,17 @@ export async function geocodeAddress(address) {
 }
 
 /**
- * Dynamically generates a link to add election deadlines to the user's Google Calendar
- * (Legacy helper maintained for compatibility)
+ * Legacy helper for calendar links
  */
 export function generateCalendarLink(title, date, description) {
-  const formattedDate = new Date(date).toISOString().replace(/-|:|\.\d\d\d/g, "");
-  const nextDay = new Date(date);
-  nextDay.setDate(nextDay.getDate() + 1);
-  const formattedEndDate = nextDay.toISOString().replace(/-|:|\.\d\d\d/g, "");
-  
-  return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formattedDate}/${formattedEndDate}&details=${encodeURIComponent(description)}&sf=true&output=xml`;
+  try {
+    const formattedDate = new Date(date).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const formattedEndDate = nextDay.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formattedDate}/${formattedEndDate}&details=${encodeURIComponent(description)}&sf=true&output=xml`;
+  } catch (err) {
+    return "#";
+  }
 }

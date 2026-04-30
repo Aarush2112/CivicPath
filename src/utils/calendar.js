@@ -3,7 +3,7 @@
  * Handles OAuth2 token acquisition and event creation
  */
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 const SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
 let tokenClient;
@@ -14,19 +14,27 @@ let accessToken = null;
  * Should be called when the Google Identity Services script is loaded
  */
 export const initCalendarClient = () => {
-  if (typeof google === 'undefined') return;
+  if (typeof google === 'undefined' || !CLIENT_ID) {
+    console.warn("Google Identity Services not loaded or Client ID missing");
+    return;
+  }
   
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (tokenResponse) => {
-      if (tokenResponse.error !== undefined) {
-        throw (tokenResponse);
-      }
-      accessToken = tokenResponse.access_token;
-      console.log("Access token acquired");
-    },
-  });
+  try {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (tokenResponse) => {
+        if (tokenResponse.error !== undefined) {
+          console.error("GIS Token Client Error:", tokenResponse);
+          return;
+        }
+        accessToken = tokenResponse.access_token;
+        console.log("Access token acquired");
+      },
+    });
+  } catch (err) {
+    console.error("Failed to initialize GIS token client:", err);
+  }
 };
 
 /**
@@ -34,12 +42,20 @@ export const initCalendarClient = () => {
  * @param {Object} eventDetails - { title, description, date }
  */
 export const addCalendarEvent = async (eventDetails) => {
+  if (!tokenClient) {
+    throw new Error("Calendar service not initialized. Please ensure you are logged in and have granted permissions.");
+  }
+
   const { title, description, date } = eventDetails;
   
   const requestToken = () => {
     return new Promise((resolve, reject) => {
       tokenClient.callback = (resp) => {
-        if (resp.error) reject(resp);
+        if (resp.error) {
+          console.error("OAuth Request Error:", resp);
+          reject(new Error("Permission denied or error requesting token"));
+          return;
+        }
         accessToken = resp.access_token;
         resolve(resp.access_token);
       };
@@ -54,7 +70,7 @@ export const addCalendarEvent = async (eventDetails) => {
       'summary': title,
       'description': description,
       'start': {
-        'date': date, // Use 'date' for all-day events (YYYY-MM-DD)
+        'date': date,
         'timeZone': 'UTC'
       },
       'end': {
@@ -64,7 +80,7 @@ export const addCalendarEvent = async (eventDetails) => {
       'reminders': {
         'useDefault': false,
         'overrides': [
-          { 'method': 'popup', 'minutes': 1440 } // 1 day before
+          { 'method': 'popup', 'minutes': 1440 }
         ]
       }
     };
@@ -78,7 +94,10 @@ export const addCalendarEvent = async (eventDetails) => {
       body: JSON.stringify(event)
     });
 
-    if (!response.ok) throw new Error("Failed to create calendar event");
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error?.message || "Failed to create calendar event");
+    }
     
     // Track GA Event
     if (window.gtag) {
