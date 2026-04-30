@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckSquare, Square, ClipboardCheck, Calendar, Check } from 'lucide-react';
+import { CheckSquare, Square, ClipboardCheck, Calendar, Check, Loader2 } from 'lucide-react';
 import { addCalendarEvent } from '../utils/calendar';
 import PropTypes from 'prop-types';
 
