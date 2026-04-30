@@ -1,36 +1,20 @@
-import { Book, HelpCircle, MapPin, CheckSquare, Info, RefreshCw, Landmark } from 'lucide-react';
+import { Book, HelpCircle, MapPin, CheckSquare, RefreshCw, Landmark, ExternalLink } from 'lucide-react';
 
 const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">
-        <h1 style={{ color: 'var(--primary)', fontSize: '1.5rem', marginBottom: '0.25rem', fontFamily: 'Outfit' }}>
-          CivicPath
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', lineHeight: '1.2' }}>
-          Your smart guide to the voting process
-        </p>
+      <div style={{ 
+        fontSize: '18px', 
+        fontWeight: 700, 
+        color: '#2563EB', 
+        padding: '0 8px 20px 8px', 
+        borderBottom: '1px solid #E2E8F0', 
+        marginBottom: '12px' 
+      }}>
+        CivicPath
       </div>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
-        <SidebarItem 
-          icon={<Info size={18} />} 
-          label="The Process" 
-          onClick={() => onSelectSection('process')} 
-          ariaLabel="Learn about the general election process"
-        />
-        <SidebarItem 
-          icon={<MapPin size={18} />} 
-          label="Jurisdictions" 
-          onClick={() => onSelectSection('jurisdictions')} 
-          ariaLabel="View available state data"
-        />
-        <SidebarItem 
-          icon={<CheckSquare size={18} />} 
-          label="My Checklist" 
-          onClick={() => onSelectSection('checklist')} 
-          ariaLabel="Open your voting checklist"
-        />
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
         <SidebarItem 
           icon={<Landmark size={18} />} 
           label="Find Representatives" 
@@ -43,7 +27,6 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
           onClick={() => onSelectSection('polling')} 
           ariaLabel="Find your local polling location"
         />
-
         <SidebarItem 
           icon={<HelpCircle size={18} />} 
           label="Common FAQs" 
@@ -56,57 +39,44 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
           onClick={() => onSelectSection('glossary')} 
           ariaLabel="View election terms glossary"
         />
-      </nav>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <div className="sidebar-logo card" style={{ padding: '0.75rem', background: 'var(--secondary)', border: 'none' }}>
-          <p style={{ fontWeight: 600, fontSize: '0.75rem', color: 'var(--primary)', margin: 0 }}>
+        
+        <div style={{ margin: '12px 0', padding: '10px 12px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
+          <p style={{ fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '11px', margin: 0 }}>
             Current Focus
           </p>
-          <p style={{ fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
+          <p style={{ color: currentJurisdiction ? '#0F172A' : '#94A3B8', fontSize: '13px', marginTop: '2px', fontWeight: 500, margin: '2px 0 0 0' }}>
             {currentJurisdiction ? currentJurisdiction.name : 'Not selected'}
           </p>
         </div>
+
         <SidebarItem 
           icon={<RefreshCw size={18} />} 
           label="Reset Chat" 
           onClick={onReset} 
           ariaLabel="Reset the conversation"
         />
+      </nav>
 
-        <div className="sidebar-logo card" style={{ padding: '0.75rem', background: 'rgba(66, 133, 244, 0.1)', border: '1px solid rgba(66, 133, 244, 0.2)', marginTop: '0.5rem' }}>
-          <p style={{ fontWeight: 600, fontSize: '0.75rem', color: '#4285F4', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4285F4' }}></span>
-            Google Services Powering CivicPath
-          </p>
-          <div style={{ fontSize: '0.7rem', margin: '0.75rem 0 0 0', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ background: 'white', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(66, 133, 244, 0.2)' }}>
-              <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.25rem' }}>Google Gemini</strong>
-              <span style={{ display: 'block', marginBottom: '0.25rem' }}>Powers the nonpartisan assistant responses.</span>
-              <span style={{ color: 'var(--success)', fontSize: '0.65rem' }}>● Connected through /api/gemini</span>
-            </div>
-            <div style={{ background: 'white', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(66, 133, 244, 0.2)' }}>
-              <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.25rem' }}>Google Civic Information API</strong>
-              <span style={{ display: 'block', marginBottom: '0.25rem' }}>Looks up representatives and voter information by address.</span>
-              <span style={{ color: 'var(--success)', fontSize: '0.65rem' }}>● Connected through /api/civic/*</span>
-            </div>
-            <div style={{ background: 'white', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(66, 133, 244, 0.2)' }}>
-              <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.25rem' }}>Google Calendar</strong>
-              <span style={{ display: 'block', marginBottom: '0.25rem' }}>Adds election deadlines as calendar reminders.</span>
-              <span style={{ color: 'var(--success)', fontSize: '0.65rem' }}>● Available on timeline deadline items</span>
-            </div>
-            <div style={{ background: 'white', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(66, 133, 244, 0.2)' }}>
-              <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.25rem' }}>Google Maps Embed API</strong>
-              <span style={{ display: 'block', marginBottom: '0.25rem' }}>Visualizes official polling locations on an interactive map.</span>
-              <span style={{ color: 'var(--success)', fontSize: '0.65rem' }}>● Connected through Polling Location Finder</span>
-            </div>
-            <div style={{ background: 'white', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(66, 133, 244, 0.2)' }}>
-              <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.25rem' }}>Google Analytics</strong>
-              <span style={{ display: 'block', marginBottom: '0.25rem' }}>Provides insights into user interactions and engagement.</span>
-              <span style={{ color: 'var(--success)', fontSize: '0.65rem' }}>● Connected via gtag.js</span>
-            </div>
-          </div>
-        </div>
+      <div style={{ marginTop: 'auto' }}>
+        <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', padding: '16px 12px 8px' }}>
+          Google Services Powering CivicPath
+        </p>
+        
+        <ServiceCard 
+          title="Google Gemini" 
+          description="Powers the nonpartisan assistant responses." 
+          status="Connected"
+        />
+        <ServiceCard 
+          title="Civic API" 
+          description="Looks up representatives and voter information." 
+          status="Connected"
+        />
+        <ServiceCard 
+          title="Google Calendar" 
+          description="Adds election deadlines as reminders." 
+          status="Available"
+        />
       </div>
     </aside>
   );
@@ -119,27 +89,52 @@ const SidebarItem = ({ icon, label, onClick, ariaLabel }) => (
     style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '0.75rem',
-      padding: '0.75rem 1rem',
-      width: '100%',
-      border: 'none',
+      gap: '10px',
+      padding: '9px 12px',
+      borderRadius: '8px',
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#475569',
       background: 'transparent',
-      borderRadius: 'var(--radius-md)',
+      border: 'none',
       cursor: 'pointer',
+      transition: 'all 0.15s ease',
+      width: '100%',
       textAlign: 'left',
-      fontSize: '0.9375rem',
-      color: 'var(--text-main)',
-      transition: 'all 0.2s',
-      fontFamily: 'Inter',
-      fontWeight: 500
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
     }}
-    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--secondary)'}
-    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+    className="sidebar-nav-item"
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = '#EFF6FF';
+      e.currentTarget.style.color = '#2563EB';
+      e.currentTarget.querySelector('.sidebar-icon').style.color = '#2563EB';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = 'transparent';
+      e.currentTarget.style.color = '#475569';
+      e.currentTarget.querySelector('.sidebar-icon').style.color = '#94A3B8';
+    }}
   >
-    <span style={{ color: 'var(--primary-light)', display: 'flex' }}>{icon}</span>
-    <span className="sidebar-logo">{label}</span>
+    <span className="sidebar-icon" style={{ width: '18px', height: '18px', color: '#94A3B8', flexShrink: 0, display: 'flex', transition: 'all 0.15s ease' }}>{icon}</span>
+    <span>{label}</span>
   </button>
 );
+
+const ServiceCard = ({ title, description, status }) => (
+  <div className="card" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '8px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <p style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '4px', margin: '0 0 4px 0' }}>{title}</p>
+    <p style={{ fontSize: '12px', color: '#64748B', lineHeight: '1.5', margin: 0, wordBreak: 'break-word' }}>{description}</p>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: 500, marginTop: '6px' }}>
+      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status === 'Connected' ? '#10B981' : '#F59E0B' }}></span>
+      <span style={{ color: status === 'Connected' ? '#10B981' : '#F59E0B' }}>{status}</span>
+    </div>
+  </div>
+);
+
+export default Sidebar;
+
 
 export default Sidebar;
 

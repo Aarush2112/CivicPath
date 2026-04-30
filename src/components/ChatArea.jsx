@@ -29,57 +29,136 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
   };
 
   return (
-    <>
-      <div style={{ padding: '1rem 2rem', borderBottom: '1px solid #e5e7eb', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-main)' }}>Election Assistant</h2>
-        <span style={{ fontSize: '0.75rem', color: '#4285F4', background: 'rgba(66, 133, 244, 0.1)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontWeight: 500 }}>
-          ✨ AI responses powered by Google Gemini
-        </span>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
-        <div className="chat-container">
-          {messages.map((msg, index) => (
-            <div 
-              key={index} 
-              className={`animate-slide ${msg.sender === 'bot' ? 'message-bot' : 'message-user'}`}
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9375rem' }}>{msg.text}</div>
-              {msg.component && (
-                <div style={{ marginTop: '1.25rem', animation: 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both', animationDelay: '0.2s' }}>
-                  {msg.component}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', scrollbarWidth: 'thin', scrollbarColor: '#CBD5E1 transparent' }}>
+        {messages.length === 1 ? (
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '40px 24px',
+            animation: 'fadeIn 0.5s ease-out'
+          }}>
+            <h1 style={{ 
+              fontSize: 'clamp(28px, 4vw, 48px)', 
+              fontWeight: 800, 
+              color: '#0F172A', 
+              textAlign: 'center', 
+              letterSpacing: '-0.02em', 
+              lineHeight: 1.15,
+              margin: 0
+            }}>
+              Welcome to CivicPath
+            </h1>
+            <p style={{ 
+              fontSize: '16px', 
+              color: '#64748B', 
+              textAlign: 'center', 
+              maxWidth: '440px', 
+              marginTop: '12px', 
+              lineHeight: 1.6,
+              margin: '12px 0 0 0'
+            }}>
+              Your intelligent companion for navigating the democratic process with confidence and clarity.
+            </p>
+            <div style={{ 
+              width: '60px', 
+              height: '3px', 
+              borderRadius: '2px', 
+              background: 'linear-gradient(90deg, #2563EB, #0EA5E9)', 
+              margin: '20px auto 0' 
+            }} />
+          </div>
+        ) : (
+          <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {messages.map((msg, index) => (
+              <div 
+                key={index} 
+                style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
+                  maxWidth: '75%',
+                  animation: 'slideUp 0.3s ease-out'
+                }}
+              >
+                <div style={{ 
+                  background: msg.sender === 'bot' ? '#FFFFFF' : '#2563EB',
+                  color: msg.sender === 'bot' ? '#0F172A' : '#FFFFFF',
+                  border: msg.sender === 'bot' ? '1px solid #E2E8F0' : 'none',
+                  borderRadius: msg.sender === 'bot' ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
+                  padding: msg.sender === 'bot' ? '14px 18px' : '12px 16px',
+                  fontSize: '14px',
+                  lineHeight: 1.6,
+                  boxShadow: msg.sender === 'bot' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none'
+                }}>
+                  <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
                 </div>
-              )}
-            </div>
-          ))}
-          {isLoading && (
-            <div className="message-bot animate-slide" style={{ display: 'flex', gap: '0.75rem', padding: '0.75rem 1.25rem' }}>
-              <Loader2 className="animate-spin" size={18} color="var(--primary-light)" />
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Thinking...</span>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+                {msg.component && (
+                  <div style={{ marginTop: '12px', width: '100%' }}>
+                    {msg.component}
+                  </div>
+                )}
+              </div>
+            ))}
+            {isLoading && (
+              <div style={{ 
+                alignSelf: 'flex-start',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: '16px 16px 16px 4px',
+                padding: '12px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                animation: 'slideUp 0.3s ease-out'
+              }}>
+                <Loader2 className="animate-spin" size={16} color="#2563EB" />
+                <span style={{ fontSize: '13px', color: '#64748B' }}>Thinking...</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </div>
 
-
-      <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid #e5e7eb', background: 'white' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0', padding: '16px 24px 20px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
           {TOPICS.map((topic, i) => (
             <button 
               key={i} 
               onClick={() => onSendMessage(topic.query)}
-              className="card"
-              style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s', border: '1px solid #e5e7eb' }}
-              onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-              onMouseOut={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+              style={{ 
+                padding: '6px 14px', 
+                borderRadius: '999px', 
+                border: '1px solid #CBD5E1', 
+                background: '#FFFFFF', 
+                fontSize: '13px', 
+                fontWeight: 500, 
+                color: '#475569', 
+                cursor: 'pointer', 
+                transition: 'all 0.15s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#2563EB';
+                e.currentTarget.style.color = '#2563EB';
+                e.currentTarget.style.background = '#EFF6FF';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#CBD5E1';
+                e.currentTarget.style.color = '#475569';
+                e.currentTarget.style.background = '#FFFFFF';
+              }}
             >
               {topic.label}
             </button>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '1rem', position: 'relative' }}>
+        <form onSubmit={handleSubmit} style={{ position: 'relative', width: '100%' }}>
           <input
             type="text"
             value={input}
@@ -87,39 +166,60 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
             placeholder="Ask about the election process..."
             disabled={isLoading}
             style={{
-              flex: 1,
-              padding: '1rem 1.5rem',
-              borderRadius: '9999px',
-              border: '1px solid #e5e7eb',
+              width: '100%',
+              padding: '13px 50px 13px 18px',
+              borderRadius: '12px',
+              border: '1.5px solid #E2E8F0',
+              background: '#F8FAFC',
+              fontSize: '14px',
+              color: '#0F172A',
               outline: 'none',
-              fontSize: '1rem',
-              boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.02)',
-              opacity: isLoading ? 0.7 : 1
+              transition: 'all 0.2s ease',
+              boxSizing: 'border-box'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#2563EB';
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#E2E8F0';
+              e.currentTarget.style.background = '#F8FAFC';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
           <button 
             type="submit" 
-            className="btn-primary"
             disabled={isLoading || !input.trim()}
             style={{ 
-              padding: '0.75rem', 
-              borderRadius: '50%', 
-              width: '48px', 
-              height: '48px', 
-              display: 'flex', 
-              alignItems: 'center', 
+              position: 'absolute',
+              right: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: '#2563EB',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.15s ease',
               opacity: (isLoading || !input.trim()) ? 0.5 : 1
             }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#1E40AF'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#2563EB'}
           >
-            <Send size={20} />
+            <Send size={16} />
           </button>
         </form>
-        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>
+        <p style={{ fontSize: '11px', color: '#94A3B8', textAlign: 'center', marginTop: '10px', margin: '10px 0 0 0' }}>
           CivicPath is nonpartisan and provides educational information. Verify with official sources.
         </p>
       </div>
-    </>
+    </div>
   );
 };
 
