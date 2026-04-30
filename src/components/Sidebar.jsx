@@ -135,6 +135,3 @@ const ServiceCard = ({ title, description, status }) => (
 
 export default Sidebar;
 
-
-export default Sidebar;
-
