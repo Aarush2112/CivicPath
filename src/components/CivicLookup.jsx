@@ -96,42 +96,71 @@ const CivicLookup = () => {
         </div>
       )}
 
-      {!loading && data && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Your Political Divisions</p>
-          {Object.entries(data.divisions || {}).map(([id, div], i) => (
-            <div key={i} className="card animate-slide" style={{ padding: '12px', background: '#fff' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{div.name}</span>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>OCD-ID</span>
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 8px 0', fontFamily: 'monospace' }}>{id}</p>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <a 
-                  href={`https://www.google.com/search?q=${encodeURIComponent(div.name + ' current representatives')}`}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ 
-                    fontSize: '11px', 
-                    color: 'var(--primary)', 
-                    textDecoration: 'none', 
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <ExternalLink size={12} /> View Officials
-                </a>
-              </div>
+      {!loading && data && data.offices && data.officials && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '450px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.5rem' }}>
+            Officials for your address
+          </p>
+          {data.offices.map((office, officeIndex) => (
+            <div key={officeIndex} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <h4 style={{ fontSize: '0.8125rem', color: 'var(--primary)', margin: '0.5rem 0 0.25rem 0', fontWeight: 700, borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>
+                {office.name}
+              </h4>
+              {office.officialIndices.map((idx) => {
+                const official = data.officials[idx];
+                return (
+                  <div key={idx} className="card animate-slide" style={{ padding: '12px', background: '#fff', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    {official.photoUrl ? (
+                      <img 
+                        src={official.photoUrl} 
+                        alt={official.name} 
+                        style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #f1f5f9' }} 
+                      />
+                    ) : (
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: '#94a3b8' }}>
+                        <User size={24} style={{ margin: 'auto' }} />
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <p style={{ fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>{official.name}</p>
+                        <span style={{ 
+                          fontSize: '10px', 
+                          fontWeight: 700, 
+                          color: official.party?.includes('Democrat') ? '#2563EB' : official.party?.includes('Republican') ? '#DC2626' : '#64748B',
+                          background: official.party?.includes('Democrat') ? '#EFF6FF' : official.party?.includes('Republican') ? '#FEF2F2' : '#F8FAFC',
+                          padding: '2px 6px',
+                          borderRadius: '4px'
+                        }}>
+                          {official.party || 'Nonpartisan'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                        {official.urls?.map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noopener noreferrer" aria-label={`${official.name} website`} style={{ color: '#64748B' }}><Globe size={14} /></a>
+                        ))}
+                        {official.phones?.map((phone, i) => (
+                          <a key={i} href={`tel:${phone}`} aria-label={`${official.name} phone`} style={{ color: '#64748B' }}><Phone size={14} /></a>
+                        ))}
+                        {official.channels?.map((channel, i) => (
+                          <a key={i} href={`https://www.${channel.type.toLowerCase()}.com/${channel.id}`} target="_blank" rel="noopener noreferrer" aria-label={`${official.name} on ${channel.type}`} style={{ color: '#64748B' }}>
+                            {getSocialIcon(channel.type)}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
-          {(!data.divisions || Object.keys(data.divisions).length === 0) && (
-            <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)', padding: '20px' }}>
-              No division data found for this address.
-            </p>
-          )}
         </div>
+      )}
+
+      {!loading && data && (!data.offices || data.offices.length === 0) && (
+        <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)', padding: '20px' }}>
+          No representative data found for this address.
+        </p>
       )}
     </div>
   );

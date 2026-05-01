@@ -1,5 +1,7 @@
 # CivicPath — Your Democratic Process Navigator
 
+**Live Demo:** [https://civic-path.vercel.app](https://civic-path.vercel.app)
+
 ## Chosen Vertical
 Civic Engagement & Election Assistance
 
@@ -19,6 +21,7 @@ CivicPath is a premium, AI-powered election assistant that guides users through 
 | **Custom Search API** | Civic source search | Restricted search engine targeting only trusted government domains (.gov, vote.org, usa.gov). |
 | **Firebase Auth + Firestore** | Session persistence | Anonymous authentication and Firestore-backed chat history for returning users. |
 | **Google Analytics 4** | Usage tracking | Custom event tracking for chat interactions, address lookups, and feature engagement. |
+| **Google Translate** | Accessibility | Seamless multi-language support injected directly into the HTML to ensure civic information is accessible to all demographics. |
 | **Google Fonts** | Typography | Professional Inter and Outfit font families for a premium, accessible UI. |
 
 ## Architecture

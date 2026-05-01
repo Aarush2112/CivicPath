@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Loader2 } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 const TOPICS = [
   { label: "Check Deadlines", query: "What are the important election deadlines?" },
@@ -8,10 +9,20 @@ const TOPICS = [
   { label: "What's a Primary?", query: "Explain what a primary election is." }
 ];
 
+/**
+ * Main chat interface for CivicPath
+ * @param {Object} props
+ * @param {Array} props.messages - List of chat messages
+ * @param {Function} props.onSendMessage - Callback for sending messages
+ * @param {boolean} props.isLoading - Whether the AI is thinking/streaming
+ */
 const ChatArea = ({ messages, onSendMessage, isLoading }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
 
+  /**
+   * Scrolls the chat container to the bottom
+   */
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -20,6 +31,10 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  /**
+   * Handles form submission for new messages
+   * @param {Event} e - Submit event
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (input.trim() && !isLoading) {
@@ -30,7 +45,11 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', scrollbarWidth: 'thin', scrollbarColor: '#CBD5E1 transparent' }}>
+      <div 
+        role="log" 
+        aria-live="polite" 
+        style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', scrollbarWidth: 'thin', scrollbarColor: '#CBD5E1 transparent' }}
+      >
         {messages.length === 1 ? (
           <div style={{ 
             flex: 1, 
@@ -112,7 +131,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
                 )}
               </div>
             ))}
-            {isLoading && !messages[messages.length - 1].isStreaming && (
+            {isLoading && (!messages[messages.length - 1] || !messages[messages.length - 1].isStreaming) && (
               <div style={{ 
                 alignSelf: 'flex-start',
                 background: '#FFFFFF',
@@ -140,6 +159,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
             <button 
               key={i} 
               onClick={() => onSendMessage(topic.query)}
+              aria-label={`Ask about ${topic.label}`}
               style={{ 
                 padding: '6px 14px', 
                 borderRadius: '999px', 
@@ -169,7 +189,9 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
         </div>
 
         <form onSubmit={handleSubmit} style={{ position: 'relative', width: '100%' }}>
+          <label htmlFor="chat-input" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>Ask about elections</label>
           <input
+            id="chat-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -201,6 +223,7 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
           <button 
             type="submit" 
             disabled={isLoading || !input.trim()}
+            aria-label="Send message"
             style={{ 
               position: 'absolute',
               right: '12px',
@@ -231,6 +254,18 @@ const ChatArea = ({ messages, onSendMessage, isLoading }) => {
       </div>
     </div>
   );
+};
+
+ChatArea.propTypes = {
+  messages: PropTypes.arrayOf(PropTypes.shape({
+    sender: PropTypes.string.isRequired,
+    text: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    isStreaming: PropTypes.bool,
+    component: PropTypes.node
+  })).isRequired,
+  onSendMessage: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired
 };
 
 export default ChatArea;

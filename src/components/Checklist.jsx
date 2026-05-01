@@ -3,6 +3,12 @@ import { CheckSquare, Square, ClipboardCheck, Calendar, Check, Loader2 } from 'l
 import { addCalendarEvent } from '../utils/calendar';
 import PropTypes from 'prop-types';
 
+/**
+ * Voting Checklist Component
+ * Allows users to track their voting preparation steps and sync deadlines to Google Calendar.
+ * @param {Object} props - Component props
+ * @param {string} props.jurisdictionName - Name of the active jurisdiction
+ */
 const Checklist = ({ jurisdictionName }) => {
   const [items, setItems] = useState([
     { id: 1, text: 'Check eligibility requirements', completed: false },

@@ -229,7 +229,7 @@ function App() {
     } else if (section === 'polling') {
       setMessages(prev => [...prev, { sender: 'bot', text: "Opening the Polling Location Finder...", component: <VoterInfoLookup /> }]);
     } else if (section === 'process') {
-      handleSendMessage("Explain the general election process step-by-step.");
+      handleSendMessage("Search official government sources for the election process.");
     } else if (section === 'jurisdictions') {
       setMessages(prev => [...prev, { sender: 'bot', text: "I currently have detailed data for: California, Texas, New York, Florida, and Pennsylvania. Which one would you like to explore?" }]);
     }
@@ -238,9 +238,9 @@ function App() {
   return (
     <div className="app-container">
       <SafeSidebar onSelectSection={handleSidebarSelect} currentJurisdiction={currentJurisdiction} onReset={resetChat} />
-      <div className="main-content">
+      <main className="main-content" role="main">
         <SafeChatArea messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
-      </div>
+      </main>
     </div>
   );
 }
