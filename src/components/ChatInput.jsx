@@ -21,34 +21,46 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
   };
 
   return (
-    <div style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0', padding: '16px 24px 20px', flexShrink: 0 }}>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+    <div style={{ 
+      background: 'rgba(255, 255, 255, 0.8)', 
+      backdropFilter: 'blur(16px)',
+      borderTop: '1px solid rgba(255, 255, 255, 0.6)', 
+      padding: '16px 24px 20px', 
+      flexShrink: 0,
+      boxShadow: '0 -4px 24px rgba(0,0,0,0.02)'
+    }}>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
         {TOPICS.map((topic, i) => (
           <button 
             key={i} 
             onClick={() => onSendMessage(topic.query)}
             aria-label={`Ask about ${topic.label}`}
             style={{ 
-              padding: '6px 14px', 
+              padding: '6px 16px', 
               borderRadius: '999px', 
-              border: '1px solid #CBD5E1', 
-              background: '#FFFFFF', 
+              border: '1px solid var(--border)', 
+              background: 'rgba(255, 255, 255, 0.9)', 
               fontSize: '13px', 
-              fontWeight: 500, 
-              color: '#475569', 
+              fontWeight: 600, 
+              color: 'var(--text-secondary)', 
               cursor: 'pointer', 
-              transition: 'all 0.15s ease',
-              whiteSpace: 'nowrap'
+              transition: 'var(--transition)',
+              whiteSpace: 'nowrap',
+              boxShadow: 'var(--shadow-sm)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#2563EB';
-              e.currentTarget.style.color = '#2563EB';
-              e.currentTarget.style.background = '#EFF6FF';
+              e.currentTarget.style.borderColor = 'var(--primary-glow)';
+              e.currentTarget.style.color = 'var(--primary)';
+              e.currentTarget.style.background = 'var(--primary-light)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-md)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#CBD5E1';
-              e.currentTarget.style.color = '#475569';
-              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
             }}
           >
             {topic.label}
@@ -67,25 +79,24 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
           disabled={isLoading}
           style={{
             width: '100%',
-            padding: '13px 50px 13px 18px',
-            borderRadius: '12px',
-            border: '1.5px solid #E2E8F0',
-            background: '#F8FAFC',
-            fontSize: '14px',
-            color: '#0F172A',
+            padding: '14px 56px 14px 20px',
+            borderRadius: '999px',
+            border: '1.5px solid var(--border)',
+            background: '#FFFFFF',
+            fontSize: '15px',
+            color: 'var(--text-primary)',
             outline: 'none',
-            transition: 'all 0.2s ease',
-            boxSizing: 'border-box'
+            transition: 'var(--transition)',
+            boxSizing: 'border-box',
+            boxShadow: 'var(--shadow-sm)'
           }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = '#2563EB';
-            e.currentTarget.style.background = '#FFFFFF';
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+            e.currentTarget.style.borderColor = 'var(--primary)';
+            e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = '#E2E8F0';
-            e.currentTarget.style.background = '#F8FAFC';
-            e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
           }}
         />
         <button 
@@ -94,29 +105,38 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
           aria-label="Send message"
           style={{ 
             position: 'absolute',
-            right: '12px',
+            right: '8px',
             top: '50%',
             transform: 'translateY(-50%)',
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: '#2563EB',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             border: 'none',
             cursor: 'pointer',
-            transition: 'background 0.15s ease',
-            opacity: (isLoading || !input.trim()) ? 0.5 : 1
+            transition: 'var(--transition)',
+            opacity: (isLoading || !input.trim()) ? 0.5 : 1,
+            boxShadow: 'var(--shadow-sm)'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = '#1E40AF'}
-          onMouseLeave={(e) => e.currentTarget.style.background = '#2563EB'}
+          onMouseEnter={(e) => {
+            if (!isLoading && input.trim()) {
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.05)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+          }}
         >
           <Send size={16} />
         </button>
       </form>
-      <p style={{ fontSize: '11px', color: '#94A3B8', textAlign: 'center', marginTop: '10px', margin: '10px 0 0 0' }}>
+      <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', margin: '12px 0 0 0', fontWeight: 500 }}>
         CivicPath is nonpartisan and provides educational information. Verify with official sources.
       </p>
     </div>
