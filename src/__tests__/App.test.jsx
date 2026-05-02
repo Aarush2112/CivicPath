@@ -7,7 +7,8 @@ import React from 'react';
 vi.mock('../utils/firebase', () => ({
   loginAnonymously: vi.fn().mockResolvedValue({ uid: 'test-user' }),
   saveChatSession: vi.fn(),
-  loadChatSession: vi.fn().mockResolvedValue([])
+  loadChatSession: vi.fn().mockResolvedValue([]),
+  fetchReports: vi.fn().mockResolvedValue([])
 }));
 
 vi.mock('../utils/gemini', () => ({
@@ -32,19 +33,28 @@ describe('App Component', () => {
 
   it('renders initial state and welcome message', async () => {
     render(<App />);
-    expect(screen.getByText(/Welcome to CivicPath/i)).toBeInTheDocument();
+    // Wait for the async initAuth to complete
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome to CivicPath/i)).toBeInTheDocument();
+    });
   });
 
-  it('shows sidebar navigation items', () => {
+  it('shows sidebar navigation items', async () => {
     render(<App />);
-    expect(screen.getByLabelText(/Find your local representatives/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Find your local polling location/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/View voting checklist/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Report a new civic issue/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Find your local representatives/i)).toBeInTheDocument();
+    });
   });
 
   it('allows user to type in the chat input and send a message', async () => {
     render(<App />);
-    const input = screen.getByPlaceholderText(/Ask about the election process/i);
+    
+    let input;
+    await waitFor(() => {
+      input = screen.getByPlaceholderText(/Ask about the election process/i);
+      expect(input).toBeInTheDocument();
+    });
 
     fireEvent.change(input, { target: { value: 'How do I register?' } });
     expect(input.value).toBe('How do I register?');

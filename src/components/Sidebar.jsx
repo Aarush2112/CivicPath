@@ -1,4 +1,4 @@
-import { Book, HelpCircle, MapPin, CheckSquare, RefreshCw, Landmark, ExternalLink, Calendar, Search } from 'lucide-react';
+import { Book, HelpCircle, MapPin, CheckSquare, RefreshCw, Landmark, ExternalLink, Calendar, Search, AlertCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 /**
@@ -23,6 +23,12 @@ const Sidebar = ({ onSelectSection, currentJurisdiction, onReset }) => {
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+        <SidebarItem 
+          icon={<AlertCircle size={18} color="#EF4444" />} 
+          label="Report Civic Issue" 
+          onClick={() => onSelectSection('report_issue')} 
+          ariaLabel="Report a new civic issue"
+        />
         <SidebarItem 
           icon={<Landmark size={18} />} 
           label="Find Representatives" 

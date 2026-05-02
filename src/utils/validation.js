@@ -40,3 +40,38 @@ export const testAssistant = async (assistantFn) => {
 
   console.log("Validation complete.");
 };
+
+/**
+ * Validates and sanitizes a civic issue report payload for security and completeness.
+ */
+export const validateIssueReport = (report) => {
+  const errors = [];
+  if (!report.title || report.title.trim().length < 5) {
+    errors.push("Title must be at least 5 characters long.");
+  }
+  if (!report.description || report.description.trim().length < 10) {
+    errors.push("Description must be at least 10 characters long.");
+  }
+  if (!report.category) {
+    errors.push("Category is required.");
+  }
+  if (!report.location || typeof report.location.lat !== 'number' || typeof report.location.lng !== 'number') {
+    errors.push("Valid location coordinates are required.");
+  }
+
+  // Basic XSS Sanitization (removing script tags)
+  const sanitize = (str) => {
+    if (typeof str !== 'string') return str;
+    return str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim();
+  };
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    sanitizedData: {
+      ...report,
+      title: sanitize(report.title),
+      description: sanitize(report.description)
+    }
+  };
+};

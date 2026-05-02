@@ -5,9 +5,11 @@ import Timeline from './components/Timeline';
 import Checklist from './components/Checklist';
 import CivicLookup from './components/CivicLookup';
 import VoterInfoLookup from './components/VoterInfoLookup';
+const LazyIssueReportForm = lazy(() => import('./components/IssueReportForm'));
+const LazyMapComponent = lazy(() => import('./components/MapComponent'));
 import { electionData, generalFAQs, glossary } from './data/electionData';
 import { getAssistantResponse } from './utils/gemini';
-import { loginAnonymously, saveChatSession, loadChatSession } from './utils/firebase';
+import { loginAnonymously, saveChatSession, loadChatSession, fetchReports } from './utils/firebase';
 import { initCalendarClient } from './utils/calendar';
 import { searchOfficialSources } from './utils/customSearch';
 import { withErrorBoundary } from './components/ErrorBoundary';
@@ -23,7 +25,7 @@ function App() {
   const [messages, setMessages] = useState([
     { 
       sender: 'bot', 
-      text: "Hello! I'm CivicPath, your interactive election guide. I can help you understand how voting works, deadlines in your area, and what steps to take. To get started, what state or jurisdiction are you interested in?" 
+      text: "Hello! I'm CivicPath, your AI-powered civic assistant. I can help you report local issues (like potholes), navigate civic services, or understand voting rules. How can I help you today?" 
     }
   ]);
   const [currentJurisdiction, setCurrentJurisdiction] = useState(null);
@@ -132,6 +134,29 @@ function App() {
       component = <CivicLookup />;
     } else if (lowerText.includes('polling') || lowerText.includes('vote location') || lowerText.includes('where to vote')) {
       component = <VoterInfoLookup />;
+    } else if (lowerText.includes('report') || lowerText.includes('issue') || lowerBotRes.includes('report issue')) {
+      component = (
+        <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>}>
+          <LazyIssueReportForm user={user} />
+        </Suspense>
+      );
+    } else if (lowerText.includes('show map') || lowerText.includes('view issues') || lowerBotRes.includes('view map')) {
+      // Fetch and show map of reports
+      fetchReports().then(reports => {
+        setMessages(prev => prev.map(msg => 
+          msg.id === botMessageId ? { 
+            ...msg, 
+            component: (
+              <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Map...</div>}>
+                <div style={{ padding: '1rem', background: 'var(--surface-light)', borderRadius: 'var(--radius-md)' }}>
+                  <h3 style={{ marginBottom: '1rem' }}>Recent Civic Issues</h3>
+                  <LazyMapComponent center={{ lat: 39.8283, lng: -98.5795 }} locations={reports} />
+                </div>
+              </Suspense>
+            )
+          } : msg
+        ));
+      });
     }
 
     // Add search results as source cards if available
@@ -176,7 +201,7 @@ function App() {
   const resetChat = () => {
     const initialMsg = { 
       sender: 'bot', 
-      text: "Hello! I'm CivicPath, your interactive election guide. I can help you understand how voting works, deadlines in your area, and what steps to take. To get started, what state or jurisdiction are you interested in?" 
+      text: "Hello! I'm CivicPath, your AI-powered civic assistant. I can help you report local issues (like potholes), navigate civic services, or understand voting rules. How can I help you today?" 
     };
     setMessages([initialMsg]);
     setCurrentJurisdiction(null);
@@ -232,6 +257,18 @@ function App() {
       handleSendMessage("Search official government sources for the election process.");
     } else if (section === 'jurisdictions') {
       setMessages(prev => [...prev, { sender: 'bot', text: "I currently have detailed data for: California, Texas, New York, Florida, and Pennsylvania. Which one would you like to explore?" }]);
+    } else if (section === 'report_issue') {
+      setMessages(prev => [...prev, { 
+        sender: 'bot', 
+        text: "Let's report a civic issue. Please fill out the form below.", 
+        component: (
+          <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading form...</div>}>
+            <LazyIssueReportForm user={user} onReportSubmitted={(r) => {
+              setMessages(current => [...current, { sender: 'bot', text: `Issue "${r.title}" successfully reported! It's categorized as ${r.category}. Is there anything else you need help with?` }]);
+            }} />
+          </Suspense>
+        ) 
+      }]);
     }
   };
 

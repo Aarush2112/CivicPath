@@ -1,46 +1,79 @@
-# CivicPath — Your Democratic Process Navigator
+# CivicPath 🏛️
 
-**Live Demo:** [https://civic-path.vercel.app](https://civic-path.vercel.app)
+CivicPath is a production-grade AI-powered civic assistant designed to help users report local issues, get guidance on civic services, and navigate government-related workflows (such as elections and voting).
 
-## Chosen Vertical
-Civic Engagement & Election Assistance
+![CivicPath UI Demo](./public/og-image.png)
 
-## Problem Statement
-A significant portion of eligible voters face barriers to participation due to complex registration rules, unclear polling locations, and a lack of accessible, nonpartisan information about their representatives. This gap in civic engagement weakens democratic representation.
+## 🎯 Problem Statement
 
-## Solution Overview
-CivicPath is a premium, AI-powered election assistant that guides users through the democratic process with clarity and confidence. By integrating real-time data from Google Civic Information, Google Maps, and Google Calendar, it provides a one-stop-shop for voter registration, official representative lookup, and personalized election deadlines.
+Navigating local government services and reporting community issues (like potholes or broken streetlights) can be confusing and fragmented. Citizens often struggle to find the right authority or understand the correct reporting process. Additionally, understanding voting rights and election deadlines remains a significant hurdle.
 
-## Google Services Used
-| Service | Purpose | Integration Depth |
-|---|---|---|
-| **Gemini 1.5 Flash** | AI chat with grounding | Multi-turn history, streaming responses, and Google Search grounding for real-time election news. |
-| **Civic Information API** | Voter info + reps | Deep integration with `voterInfo` and `representatives` endpoints, including official photos and social links. |
-| **Maps JavaScript API** | Polling location map | Custom Advanced Markers, InfoWindows with directions, and Geocoding for address-to-location mapping. |
-| **Calendar API** | Deadline reminders | OAuth 2.0 flow to add official election dates and registration deadlines directly to user calendars. |
-| **Custom Search API** | Civic source search | Restricted search engine targeting only trusted government domains (.gov, vote.org, usa.gov). |
-| **Firebase Auth + Firestore** | Session persistence | Anonymous authentication and Firestore-backed chat history for returning users. |
-| **Google Analytics 4** | Usage tracking | Custom event tracking for chat interactions, address lookups, and feature engagement. |
-| **Google Translate** | Accessibility | Seamless multi-language support injected directly into the HTML to ensure civic information is accessible to all demographics. |
-| **Google Fonts** | Typography | Professional Inter and Outfit font families for a premium, accessible UI. |
+## 🚀 Solution Approach
 
-## Architecture
-CivicPath is built with React and Vite, utilizing a modular component architecture:
-- **`App.jsx`**: Central state management, authentication flow, and API orchestration.
-- **`utils/`**: Specialized modules for Gemini, Civic API, Calendar, and Firebase logic.
-- **`components/`**: Reusable UI elements, including a lazy-loaded Map component and rich official cards.
-- **`hooks/`**: Custom React hooks for encapsulating complex API logic and loading states.
+CivicPath solves this by providing a unified, AI-driven conversational interface. 
+- **AI Civic Advisor:** A smart chat assistant (powered by Gemini 1.5 Flash) that understands natural language descriptions of issues, categorizes them, assigns severity, and provides immediate guidance.
+- **Interactive Issue Mapping:** Users can drop pins on an interactive Google Map to accurately report locations, and view a dashboard of recently reported community issues.
+- **Election Navigation:** Built-in tools for official representative lookup, polling location finding, and voting checklists.
 
-## How to Run
-1.  **Clone the repository:** `git clone <repo-url>`
-2.  **Install dependencies:** `npm install`
-3.  **Configure environment variables:**
-    - Rename `.env.example` to `.env`
-    - Add your Google API Keys (Gemini, Civic, Maps, Search, Firebase)
-4.  **Start development server:** `npm run dev`
-5.  **Run tests:** `npm test`
+## 🛠️ Architecture & Technologies
 
-## Assumptions
-- Users have a Google account for Calendar integration.
-- Election data is primarily focused on the United States.
-- The 2026 Midterm Elections are the current primary context.
+CivicPath is built with a modern, serverless React architecture deployed on Vercel.
+
+- **Frontend:** React (Vite), CSS Variables for theming, Lucide React (Icons). Heavy components (like Maps) are lazy-loaded for maximum efficiency.
+- **Backend/API:** Vercel Serverless Functions (`/api/gemini.js`).
+- **Google Services Deep Integration:**
+  - **Firebase:** Authentication (Anonymous login for frictionless UX) & Firestore Database (storing chat history and community issue reports).
+  - **Google Maps API:** `@vis.gl/react-google-maps` for interactive plotting, click-to-pin reporting, and rendering `AdvancedMarker`s for issues vs polling locations.
+  - **Gemini API:** Integrates `gemini-1.5-flash` with a custom system prompt to act as the AI Civic Advisor. Securely routed through a serverless backend to protect API keys.
+  - **Google Civic Information API:** Retrieves official polling places and representatives.
+- **Testing:** Comprehensive Vitest unit tests covering the core AI validation, input sanitization, and security logic.
+
+## 📦 Setup Instructions
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/civicpath.git
+   cd civicpath
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables:**
+   Create a `.env` file in the root directory and add the following keys. (See `.env.example` for details):
+   ```env
+   VITE_GEMINI_API_KEY=your_gemini_key
+   VITE_MAPS_API_KEY=your_maps_key
+   VITE_CIVIC_API_KEY=your_civic_key
+   VITE_FIREBASE_API_KEY=your_firebase_key
+   VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+   # ... other Firebase config
+   ```
+
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Run Tests:**
+   ```bash
+   npm run test
+   ```
+
+## 🔐 Security & Code Quality
+
+- **API Security:** The Gemini API key is kept secure by routing all requests through the `/api/gemini` Vercel serverless function.
+- **Sanitization:** All user-submitted issue reports undergo strict XSS sanitization and payload validation before reaching Firestore.
+- **Accessibility (a11y):** Fully ARIA-compliant forms, proper focus management, and high-contrast color palettes ensure accessibility for all users.
+- **Performance:** Lazy loading, React `Suspense`, and debouncing are utilized to maintain a repository size under 10MB and near-instant load times.
+
+## 🔭 Future Scope
+
+- **Government Portal Integration:** Direct integration with city 311 APIs to automatically forward verified issues to local authorities.
+- **Push Notifications:** Alert users when their reported issue status changes from "Open" to "Resolved".
+- **Multilingual Support:** Leverage Gemini's translation capabilities to serve diverse communities natively.
+
+---
+*Built for the Google Prompt Wars.*

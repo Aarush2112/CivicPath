@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously } from "firebase/auth";
-import { getFirestore, collection, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, addDoc, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
 
 /**
  * Firebase initialization with guards for production stability
@@ -80,5 +80,49 @@ export const loadChatSession = async (uid) => {
   } catch (error) {
     console.error("Firestore Load Error:", error);
     return null;
+  }
+};
+
+/**
+ * Submits a new civic issue report
+ */
+export const submitReport = async (uid, reportData) => {
+  if (!db) {
+    console.warn("Firestore not initialized, returning mock report.");
+    return { id: "mock-id", ...reportData };
+  }
+  try {
+    const docRef = await addDoc(collection(db, "reports"), {
+      ...reportData,
+      uid: uid || "guest-mode",
+      status: "Open",
+      createdAt: serverTimestamp()
+    });
+    return { id: docRef.id, ...reportData, status: "Open" };
+  } catch (error) {
+    console.error("Firestore Submit Report Error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches civic issue reports
+ */
+export const fetchReports = async () => {
+  if (!db) {
+    console.warn("Firestore not initialized, returning empty reports.");
+    return [];
+  }
+  try {
+    const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    const reports = [];
+    querySnapshot.forEach((doc) => {
+      reports.push({ id: doc.id, ...doc.data() });
+    });
+    return reports;
+  } catch (error) {
+    console.error("Firestore Fetch Reports Error:", error);
+    return [];
   }
 };

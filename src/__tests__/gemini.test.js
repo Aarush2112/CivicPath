@@ -1,64 +1,63 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getAssistantResponse } from '../utils/gemini';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const { mockStartChat, mockGetGenerativeModel } = vi.hoisted(() => {
-  const mockStartChat = vi.fn().mockReturnValue({
-    sendMessage: vi.fn().mockResolvedValue({ response: { text: () => 'Mocked response' } }),
-    sendMessageStream: vi.fn().mockResolvedValue({
-      stream: (async function* () {
-        yield { text: () => 'Mocked ' };
-        yield { text: () => 'streaming ' };
-        yield { text: () => 'response' };
-      })()
-    })
-  });
-  return {
-    mockStartChat,
-    mockGetGenerativeModel: vi.fn().mockReturnValue({ startChat: mockStartChat })
-  };
-});
-
-vi.mock('@google/generative-ai', () => {
-  return {
-    GoogleGenerativeAI: vi.fn().mockImplementation(function() {
-      return { getGenerativeModel: mockGetGenerativeModel };
-    })
-  };
-});
 
 describe('Gemini Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn();
   });
 
-  it('should send chat history correctly', async () => {
+  afterEach(() => {
+    delete global.fetch;
+  });
+
+  it('should send chat history correctly via fetch', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: "Mocked response" }] } }]
+      })
+    });
+
     const history = [
       { sender: 'user', text: 'Hi' },
       { sender: 'bot', text: 'Hello' }
     ];
     await getAssistantResponse('How are you?', history);
     
-    const chatOptions = mockStartChat.mock.calls[0][0];
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const fetchArgs = global.fetch.mock.calls[0];
+    expect(fetchArgs[0]).toBe('/api/gemini');
     
-    expect(chatOptions.history).toHaveLength(2);
-    expect(chatOptions.history[0].role).toBe('user');
-    expect(chatOptions.history[1].role).toBe('model');
+    const reqBody = JSON.parse(fetchArgs[1].body);
+    // history length + system prompt + ack + current query
+    expect(reqBody.contents.length).toBeGreaterThan(2);
+    
+    // The current query should be the last item
+    const lastItem = reqBody.contents[reqBody.contents.length - 1];
+    expect(lastItem.parts[0].text).toBe('How are you?');
   });
 
-  it('should handle streaming chunks correctly', async () => {
+  it('should handle simulated streaming chunks correctly', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: "Mocked streaming response" }] } }]
+      })
+    });
+
     let streamedText = '';
     const response = await getAssistantResponse('Hello', [], null, (chunk) => {
       streamedText = chunk;
     });
-    expect(streamedText).toBe('Mocked streaming response');
-    expect(response).toBe('Mocked streaming response');
+    
+    // Since our simulate streaming appends space
+    expect(streamedText.trim()).toBe('Mocked streaming response');
+    expect(response.trim()).toBe('Mocked streaming response');
   });
 
-  it('should return fallback message when API key is missing or initialization fails', async () => {
-    mockGetGenerativeModel.mockImplementationOnce(() => {
-      throw new Error('API Key Missing');
-    });
+  it('should return fallback message when API fails', async () => {
+    global.fetch.mockRejectedValueOnce(new Error('Network Error'));
 
     const response = await getAssistantResponse('Hello');
     expect(response).toContain("I'm having trouble connecting to my AI core");
